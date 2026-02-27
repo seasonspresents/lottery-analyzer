@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html data-theme="cupcake">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Today's Game Plan | {{ state_cfg.abbreviation }} Scratcher</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap');
+        :root {
+            --pop-coral: #FF6B6B; --pop-green: #58CC02; --pop-yellow: #FFC800;
+            --pop-purple: #A855F7; --pop-blue: #38BDF8; --pop-cream: #FFF8F0;
+        }
+        body { font-family: 'Nunito', system-ui, sans-serif; background: var(--pop-cream); }
+        @media print { .no-print { display: none !important; } body { background: white; } }
+    </style>
+</head>
+<body class="min-h-screen p-4" style="max-width: 480px; margin: 0 auto;">
+
+    <!-- Nav -->
+    <div class="no-print flex gap-2 mb-4">
+        <a href="/?state={{ state }}" class="text-xs font-extrabold px-3 py-1.5 rounded-lg no-underline" style="background: #EDE9FE; color: #5B21B6;">Dashboard</a>
+        <a href="/stores?state={{ state }}" class="text-xs font-extrabold px-3 py-1.5 rounded-lg no-underline" style="background: #D1FAE5; color: #065F46;">Stores</a>
+        <a href="/tracker?state={{ state }}" class="text-xs font-extrabold px-3 py-1.5 rounded-lg no-underline" style="background: #FEF3C7; color: #92400E;">Tracker</a>
+        <a href="/go" class="text-xs font-extrabold px-3 py-1.5 rounded-lg no-underline" style="background: #DBEAFE; color: #1E40AF;">ScratcherIQ</a>
+    </div>
+
+    <!-- Header -->
+    <div class="text-center mb-6">
+        <div class="text-4xl mb-2">{{ state_cfg.mascot_emoji|safe }}</div>
+        <h1 class="text-2xl font-black" style="color: #1a1a2e;">Today's Game Plan</h1>
+        <p class="text-xs font-bold text-gray-400 mt-1">Screenshot this and take it to the store</p>
+        <p class="text-[10px] font-bold mt-1" style="color: var(--pop-purple);">Updated {{ analyzed_at[:19].replace('T',' ') }} UTC</p>
+    </div>
+
+    <!-- Picks -->
+    {% set colors = ['#FF6B6B', '#58CC02', '#38BDF8'] %}
+    {% set labels = ['TOP PICK', 'RUNNER UP', 'SOLID BET'] %}
+    {% for pick in smart_picks %}
+    <div class="bg-white rounded-2xl p-5 mb-4 shadow-sm" style="border-left: 5px solid {{ colors[loop.index0] }};">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md text-white" style="background: {{ colors[loop.index0] }};">{{ labels[loop.index0] }}</span>
+            <span class="text-xs font-black" style="color: var(--pop-purple);">Safety: {{ pick.safety_score }}/100</span>
+        </div>
+
+        <div class="text-xl font-black mb-0.5" style="color: #1a1a2e;">{{ pick.name }}</div>
+        <div class="text-xs font-bold text-gray-400 mb-3">#{{ pick.game_num }} &middot; ${{ pick.price|int }} ticket</div>
+
+        <!-- What to say at the counter -->
+        <div class="rounded-xl p-3 mb-3" style="background: #FFF7ED;">
+            <div class="text-[10px] font-black uppercase tracking-wider mb-1" style="color: #92400E;">Tell the clerk:</div>
+            <div class="text-sm font-black" style="color: #1a1a2e;">
+                "Can I get {{ pick.buy_recommended }} of {{ pick.name }} in a row from the same roll?"
+            </div>
+        </div>
+
+        <!-- Quick stats -->
+        <div class="grid grid-cols-4 gap-2 text-center">
+            <div>
+                <div class="text-[10px] font-bold text-gray-400">Buy</div>
+                <div class="text-lg font-black" style="color: #1a1a2e;">{{ pick.buy_recommended }}</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-bold text-gray-400">Cost</div>
+                <div class="text-lg font-black" style="color: var(--pop-purple);">${{ pick.buy_cost|int }}</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-bold text-gray-400">Win%</div>
+                <div class="text-lg font-black" style="color: var(--pop-green);">{{ pick.buy_win_chance|int }}%</div>
+            </div>
+            <div>
+                <div class="text-[10px] font-bold text-gray-400">Top $</div>
+                <div class="text-lg font-black" style="color: var(--pop-coral);">{{ "{:,.0f}".format(pick.top_prize / 1000) }}K</div>
+            </div>
+        </div>
+
+        <!-- Reinvestment plan -->
+        <div class="mt-3 rounded-xl p-3" style="background: #F0FDF4;">
+            <div class="text-[10px] font-black uppercase tracking-wider mb-1" style="color: #065F46;">If you win:</div>
+            <div class="text-xs font-bold" style="color: #374151;">
+                Pocket 50%. Reinvest 50% into {{ pick.buy_recommended }} more of the <strong>same game, same roll</strong>.
+                If you lose the reinvest round, stop. Don't chase.
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Second Chance Reminder -->
+    <div class="bg-white rounded-2xl p-5 mb-4 shadow-sm" style="border-left: 5px solid var(--pop-yellow);">
+        <div class="flex items-center gap-2 mb-2">
+            <span class="text-xl">&#9888;&#65039;</span>
+            <span class="text-sm font-black" style="color: #1a1a2e;">Don't Throw Away Losers!</span>
+        </div>
+        <div class="text-xs font-bold" style="color: #6B7280; line-height: 1.6;">
+            {{ state_cfg.second_chance_text|safe }}
+            Richard Lustig won 2 of his 7 grand prizes from second chance drawings.
+        </div>
+    </div>
+
+    <!-- Lustig's Rules -->
+    <div class="bg-white rounded-2xl p-5 mb-4 shadow-sm">
+        <div class="text-sm font-black mb-3" style="color: #1a1a2e;">{{ state_cfg.mascot_emoji|safe }} {{ state_cfg.mascot_name.split(' ')[0] }}'s Store Rules</div>
+        <div class="space-y-2 text-xs font-bold" style="color: #6B7280;">
+            <div class="flex gap-2">
+                <span class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black text-white" style="background:var(--pop-green);">1</span>
+                <span>Stick to the plan. Buy exactly what's listed above.</span>
+            </div>
+            <div class="flex gap-2">
+                <span class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black text-white" style="background:var(--pop-purple);">2</span>
+                <span>Always ask for tickets from the <strong>same roll</strong> — not random pulls.</span>
+            </div>
+            <div class="flex gap-2">
+                <span class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black text-white" style="background:var(--pop-coral);">3</span>
+                <span>Don't switch games mid-session. One game per trip.</span>
+            </div>
+            <div class="flex gap-2">
+                <span class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black text-white" style="background:var(--pop-blue);">4</span>
+                <span>Log results in the <a href="/tracker?state={{ state }}" style="color:var(--pop-purple);">Tracker</a> when you get home.</span>
+            </div>
+            <div class="flex gap-2">
+                <span class="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black text-white" style="background:var(--pop-yellow); color:#92400E;">5</span>
+                <span>Enter ALL losing tickets at {{ state_cfg.second_chance_url }} for second chance.</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center text-[10px] font-bold text-gray-300 mb-8">
+        Play responsibly. Problem gambling? {{ state_cfg.helpline }}
+    </div>
+</body>
+</html>

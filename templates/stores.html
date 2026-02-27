@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html data-theme="cupcake">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Finder | {{ state_cfg.abbreviation }} Scratcher Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap');
+        :root {
+            --pop-coral: #FF6B6B;
+            --pop-green: #58CC02;
+            --pop-yellow: #FFC800;
+            --pop-purple: #A855F7;
+            --pop-blue: #38BDF8;
+            --pop-pink: #F472B6;
+            --pop-orange: #FB923C;
+            --pop-cream: #FFF8F0;
+            --pop-mint: #6EE7B7;
+        }
+        body { font-family: 'Nunito', system-ui, sans-serif; background: var(--pop-cream); }
+        #map { height: 550px; width: 100%; border-radius: 24px; border: 3px solid white; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+
+        .store-card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+        .store-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+
+        /* Leaflet popup overrides */
+        .leaflet-popup-content-wrapper {
+            border-radius: 20px !important;
+            font-family: 'Nunito', system-ui, sans-serif !important;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15) !important;
+            padding: 0 !important;
+        }
+        .leaflet-popup-content { margin: 0 !important; width: 260px !important; }
+        .leaflet-popup-tip { box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important; }
+
+        .popup-inner { padding: 16px 18px 14px; }
+        .popup-name { font-weight: 900; font-size: 15px; color: #1a1a2e; line-height: 1.2; }
+        .popup-addr { font-size: 12px; color: #6b7280; font-weight: 600; margin-top: 4px; line-height: 1.3; }
+        .popup-dist-badge {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 13px;
+            font-weight: 900;
+            color: var(--pop-purple);
+            background: #EDE9FE;
+            padding: 4px 12px;
+            border-radius: 10px;
+        }
+        .popup-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .popup-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font-size: 12px;
+            font-weight: 800;
+            color: white;
+            padding: 8px 10px;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: transform 0.1s ease, opacity 0.1s ease;
+        }
+        .popup-btn:hover { opacity: 0.9; transform: scale(1.03); }
+        .popup-btn-google { background: linear-gradient(135deg, #4285F4 0%, #34A853 100%); }
+        .popup-btn-apple { background: linear-gradient(135deg, #1a1a2e 0%, #333 100%); }
+        .popup-btn svg { flex-shrink: 0; }
+
+        /* Pulsing user location dot */
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+        .user-dot-wrapper { position: relative; }
+        .user-dot {
+            width: 18px; height: 18px;
+            background: var(--pop-green);
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 2;
+        }
+        .user-dot-pulse {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 18px; height: 18px;
+            margin: -9px 0 0 -9px;
+            background: var(--pop-green);
+            border-radius: 50%;
+            opacity: 0.4;
+            animation: pulse-ring 2s ease-out infinite;
+            z-index: 1;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner {
+            display: inline-block; width: 18px; height: 18px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        .spinner-dark {
+            border-color: rgba(168,85,247,0.2);
+            border-top-color: var(--pop-purple);
+        }
+
+        /* Loading overlay on map */
+        .map-loading {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,248,240,0.85);
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            gap: 12px;
+        }
+        .map-loading-text { font-weight: 800; font-size: 14px; color: var(--pop-purple); }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Header -->
+    <div class="bg-white border-b-4 border-[--pop-purple] shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <h1 class="text-3xl font-black tracking-tight" style="color: #1a1a2e;">
+                    <span style="color: var(--pop-purple);">Store</span> Finder
+                </h1>
+                <p class="text-sm font-semibold mt-1" style="color: #9ca3af;">
+                    Find {{ state_cfg.name }} Lottery retailers near you
+                </p>
+            </div>
+            <div class="flex gap-3 items-center flex-wrap">
+                <a href="/?state={{ state }}" class="font-extrabold text-sm px-5 py-2.5 rounded-xl border-2 no-underline"
+                   style="border-color: var(--pop-green); color: var(--pop-green); transition: all 0.15s ease;"
+                   onmouseover="this.style.background='var(--pop-green)';this.style.color='white'"
+                   onmouseout="this.style.background='transparent';this.style.color='var(--pop-green)'">
+                    Dashboard
+                </a>
+                <a href="/plan?state={{ state }}" class="font-extrabold text-sm px-5 py-2.5 rounded-xl border-2 no-underline"
+                   style="border-color: var(--pop-coral); color: var(--pop-coral); transition: all 0.15s ease;"
+                   onmouseover="this.style.background='var(--pop-coral)';this.style.color='white'"
+                   onmouseout="this.style.background='transparent';this.style.color='var(--pop-coral)'">
+                    Game Plan
+                </a>
+                <a href="/tracker?state={{ state }}" class="font-extrabold text-sm px-5 py-2.5 rounded-xl border-2 no-underline"
+                   style="border-color: var(--pop-yellow); color: #92400E; transition: all 0.15s ease;"
+                   onmouseover="this.style.background='var(--pop-yellow)';this.style.color='white'"
+                   onmouseout="this.style.background='transparent';this.style.color='#92400E'">
+                    Tracker
+                </a>
+                <a href="/go" class="font-extrabold text-sm px-5 py-2.5 rounded-xl border-2 no-underline"
+                   style="border-color: var(--pop-blue); color: var(--pop-blue); transition: all 0.15s ease;"
+                   onmouseover="this.style.background='var(--pop-blue)';this.style.color='white'"
+                   onmouseout="this.style.background='transparent';this.style.color='var(--pop-blue)'">
+                    ScratcherIQ
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 py-8">
+
+        {% if state_cfg.has_retailer_api %}
+        <!-- Search Bar -->
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 mb-6">
+            <div class="flex flex-wrap gap-4 items-end">
+                <div class="flex-1 min-w-[250px]">
+                    <label class="text-xs font-black uppercase tracking-wider mb-2 block" style="color: #9ca3af;">
+                        Search by ZIP code or city
+                    </label>
+                    <input type="text" id="searchInput" placeholder="e.g. 85281 or Tempe"
+                        class="input input-bordered w-full rounded-xl font-bold text-base"
+                        style="border-color: #e5e7eb;"
+                        onkeydown="if(event.key==='Enter') searchLocation()">
+                </div>
+                <button onclick="searchLocation()" id="searchBtn"
+                    class="font-extrabold text-white px-7 py-3 rounded-xl cursor-pointer border-0 active:scale-95"
+                    style="background: var(--pop-purple); height: 48px;">
+                    Search
+                </button>
+                <button onclick="useMyLocation()" id="locateBtn"
+                    class="font-extrabold text-white px-7 py-3 rounded-xl cursor-pointer border-0 active:scale-95"
+                    style="background: var(--pop-green); box-shadow: 0 3px 10px rgba(88,204,2,0.3); height: 48px;">
+                    Use My Location
+                </button>
+            </div>
+            <p id="searchStatus" class="text-xs font-bold mt-3" style="color: #9ca3af;"></p>
+        </div>
+
+        <!-- Map -->
+        <div class="mb-6 relative" id="mapContainer">
+            <div id="mapLoading" class="map-loading">
+                <div class="spinner spinner-dark" style="width:32px;height:32px;border-width:4px;"></div>
+                <div class="map-loading-text">Finding your location...</div>
+            </div>
+            <div id="map"></div>
+        </div>
+
+        <!-- Results List -->
+        <div id="resultsSection" class="hidden">
+            <div class="flex items-center gap-3 mb-4">
+                <h2 class="text-xl font-black" style="color: #1a1a2e;">Nearby Retailers</h2>
+                <span id="resultsCount" class="text-xs font-bold px-3 py-1 rounded-full" style="background: #EDE9FE; color: #5B21B6;"></span>
+            </div>
+            <div id="resultsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+
+        <!-- Tip -->
+        <div class="rounded-2xl p-5 mt-8 mb-6" style="background: #FFF7ED; border: 2px solid #FDBA74;">
+            <div class="text-sm font-bold" style="color: #9A3412;">
+                <span class="font-black">Pro tip:</span> All these stores sell {{ state_cfg.name }} Lottery scratchers. If a store doesn't have the specific game you want on the rack,
+                ask the clerk — they often have more rolls behind the counter. Pick your game from the
+                <a href="/?state={{ state }}" class="font-black underline" style="color: var(--pop-purple);">Dashboard</a> first, then head to the nearest store.
+            </div>
+        </div>
+
+        {% else %}
+        <!-- No retailer API fallback -->
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 mb-6 text-center">
+            <div class="text-5xl mb-4">{{ state_cfg.mascot_emoji|safe }}</div>
+            <h2 class="text-xl font-black mb-3" style="color: #1a1a2e;">{{ state_cfg.name }} Store Finder</h2>
+            <p class="text-sm font-bold text-gray-500 mb-6 max-w-md mx-auto">
+                The {{ state_cfg.name }} Lottery retailer locator isn't available through our app yet.
+                Use the official site to find a store near you.
+            </p>
+            <a href="{{ state_cfg.official_base_url }}" target="_blank"
+                class="inline-flex items-center gap-2 font-extrabold text-white px-8 py-4 rounded-2xl no-underline"
+                style="background: var(--pop-purple); box-shadow: 0 4px 14px rgba(168,85,247,0.3);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                Visit {{ state_cfg.name }} Lottery Website
+            </a>
+            <p class="text-xs font-bold text-gray-400 mt-4">
+                <a href="/?state={{ state }}" class="font-black underline" style="color: var(--pop-purple);">Back to Dashboard</a>
+            </p>
+        </div>
+
+        <!-- Map with default center (no retailer pins) -->
+        <div class="mb-6">
+            <div id="map"></div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Initialize map centered on state
+        const mapCenter = {{ state_cfg.map_center }};
+        const mapZoom = {{ state_cfg.map_zoom }};
+        const map = L.map('map').setView(mapCenter, mapZoom);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 19,
+        }).addTo(map);
+
+        {% if state_cfg.has_retailer_api %}
+        let markers = [];
+        let userMarker = null;
+        let userLat = null;
+        let userLng = null;
+
+        // Pulsing user location icon
+        const userIcon = L.divIcon({
+            html: `<div class="user-dot-wrapper">
+                       <div class="user-dot-pulse"></div>
+                       <div class="user-dot"></div>
+                   </div>`,
+            iconSize: [18, 18],
+            iconAnchor: [9, 9],
+            className: '',
+        });
+
+        // Store pin icon
+        const storeIcon = L.divIcon({
+            html: '<div style="background:var(--pop-purple);width:32px;height:32px;border-radius:50%;border:3px solid white;box-shadow:0 2px 10px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:900;">$</div>',
+            iconSize: [32, 32],
+            iconAnchor: [16, 16],
+            className: '',
+        });
+
+        function setStatus(text, color) {
+            const el = document.getElementById('searchStatus');
+            el.textContent = text;
+            el.style.color = color || '#9ca3af';
+        }
+
+        function hideMapLoading() {
+            const el = document.getElementById('mapLoading');
+            if (el) el.style.display = 'none';
+        }
+
+        function showMapLoading(text) {
+            const el = document.getElementById('mapLoading');
+            if (el) {
+                el.style.display = 'flex';
+                el.querySelector('.map-loading-text').textContent = text || 'Loading...';
+            }
+        }
+
+        function clearMarkers() {
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+        }
+
+        function makePopupHtml(store) {
+            const dist = store.distance ? store.distance.toFixed(1) : '?';
+            const addr = titleCase(store.formattedAddress || (store.streetAddress + ', ' + store.city));
+            const googleUrl = `https://www.google.com/maps/dir/?api=1&destination=${store.latitude},${store.longitude}`;
+            const appleUrl = `https://maps.apple.com/?daddr=${store.latitude},${store.longitude}&dirflg=d`;
+
+            return `
+                <div class="popup-inner">
+                    <div class="popup-name">${titleCase(store.retailerName)}</div>
+                    <div class="popup-addr">${addr}</div>
+                    <div class="popup-dist-badge">${dist} miles away</div>
+                    <div class="popup-buttons">
+                        <a href="${googleUrl}" target="_blank" class="popup-btn popup-btn-google">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                            Google Maps
+                        </a>
+                        <a href="${appleUrl}" target="_blank" class="popup-btn popup-btn-apple">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                            Apple Maps
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        function fetchRetailers(lat, lng) {
+            showMapLoading('Finding nearby stores...');
+            setStatus('Finding nearby stores...', 'var(--pop-purple)');
+            clearMarkers();
+
+            userLat = lat;
+            userLng = lng;
+
+            // Place user marker with pulsing dot
+            if (userMarker) map.removeLayer(userMarker);
+            userMarker = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map)
+                .bindPopup('<div style="padding:8px 4px;text-align:center;"><div style="font-weight:900;font-size:14px;color:#1a1a2e;">You are here</div></div>');
+
+            fetch(`/api/retailers?lat=${lat}&lng=${lng}&state={{ state }}`)
+                .then(r => r.json())
+                .then(stores => {
+                    hideMapLoading();
+
+                    if (stores.error) {
+                        setStatus('Error: ' + stores.error, 'var(--pop-coral)');
+                        return;
+                    }
+
+                    setStatus(`Found ${stores.length} lottery retailers near you`, 'var(--pop-green)');
+
+                    // Add store markers
+                    stores.forEach((store, i) => {
+                        const marker = L.marker([store.latitude, store.longitude], { icon: storeIcon })
+                            .addTo(map)
+                            .bindPopup(makePopupHtml(store), { maxWidth: 280 });
+                        markers.push(marker);
+                    });
+
+                    // Fit map to show user + nearest ~15 stores
+                    const nearby = markers.slice(0, 15);
+                    if (nearby.length > 0) {
+                        const group = L.featureGroup([userMarker, ...nearby]);
+                        map.fitBounds(group.getBounds().pad(0.15));
+                    }
+
+                    // Build card list
+                    renderList(stores);
+                })
+                .catch(err => {
+                    hideMapLoading();
+                    setStatus('Error fetching stores: ' + err, 'var(--pop-coral)');
+                });
+        }
+
+        function renderList(stores) {
+            const section = document.getElementById('resultsSection');
+            const list = document.getElementById('resultsList');
+            const count = document.getElementById('resultsCount');
+
+            section.classList.remove('hidden');
+            count.textContent = stores.length + ' stores';
+            list.innerHTML = '';
+
+            const colors = ['--pop-coral', '--pop-green', '--pop-blue', '--pop-purple', '--pop-yellow', '--pop-pink', '--pop-orange', '--pop-mint'];
+
+            stores.forEach((store, i) => {
+                const dist = store.distance ? store.distance.toFixed(1) : '?';
+                const googleUrl = `https://www.google.com/maps/dir/?api=1&destination=${store.latitude},${store.longitude}`;
+                const appleUrl = `https://maps.apple.com/?daddr=${store.latitude},${store.longitude}&dirflg=d`;
+                const color = colors[i % colors.length];
+
+                const card = document.createElement('div');
+                card.className = 'store-card bg-white rounded-2xl border border-gray-100 p-5 cursor-pointer';
+                card.onclick = () => {
+                    map.setView([store.latitude, store.longitude], 16);
+                    markers[i].openPopup();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+
+                card.innerHTML = `
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-black text-white flex-shrink-0"
+                                    style="background: var(${color});">${i + 1}</span>
+                                <div class="font-extrabold text-sm" style="color: #1a1a2e;">${titleCase(store.retailerName)}</div>
+                            </div>
+                            <div class="text-xs font-semibold text-gray-400 ml-10">${titleCase(store.formattedAddress || store.streetAddress)}</div>
+                        </div>
+                        <div class="flex-shrink-0 text-right">
+                            <div class="text-lg font-black" style="color: var(--pop-purple);">${dist}</div>
+                            <div class="text-[10px] font-bold" style="color: #9ca3af;">miles</div>
+                        </div>
+                    </div>
+                    <div class="mt-3 ml-10 flex gap-2">
+                        <a href="${googleUrl}" target="_blank"
+                            class="inline-flex items-center gap-1.5 text-xs font-extrabold text-white px-4 py-2 rounded-xl no-underline"
+                            style="background: linear-gradient(135deg, #4285F4 0%, #34A853 100%);"
+                            onclick="event.stopPropagation()">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                            Google Maps
+                        </a>
+                        <a href="${appleUrl}" target="_blank"
+                            class="inline-flex items-center gap-1.5 text-xs font-extrabold text-white px-4 py-2 rounded-xl no-underline"
+                            style="background: linear-gradient(135deg, #1a1a2e 0%, #333 100%);"
+                            onclick="event.stopPropagation()">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                            Apple Maps
+                        </a>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function titleCase(str) {
+            if (!str) return '';
+            return str.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        }
+
+        // Search by ZIP / city
+        function searchLocation() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) { setStatus('Enter a ZIP code or city name', 'var(--pop-coral)'); return; }
+
+            showMapLoading('Looking up ' + query + '...');
+            setStatus('Looking up location...', 'var(--pop-purple)');
+
+            fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query + ', {{ state_cfg.geocode_suffix }}')}&format=json&limit=1`)
+                .then(r => r.json())
+                .then(results => {
+                    if (!results.length) {
+                        hideMapLoading();
+                        setStatus('Location not found. Try a ZIP code or city name in {{ state_cfg.name }}.', 'var(--pop-coral)');
+                        return;
+                    }
+                    fetchRetailers(parseFloat(results[0].lat), parseFloat(results[0].lon));
+                })
+                .catch(err => {
+                    hideMapLoading();
+                    setStatus('Geocoding error: ' + err, 'var(--pop-coral)');
+                });
+        }
+
+        // Use browser geolocation
+        function useMyLocation() {
+            if (!navigator.geolocation) {
+                setStatus('Geolocation not supported by your browser', 'var(--pop-coral)');
+                return;
+            }
+            showMapLoading('Getting your location...');
+            setStatus('Getting your location...', 'var(--pop-purple)');
+            const btn = document.getElementById('locateBtn');
+            btn.innerHTML = '<span class="spinner"></span> Locating...';
+            btn.disabled = true;
+
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    btn.textContent = 'Use My Location';
+                    btn.disabled = false;
+                    fetchRetailers(pos.coords.latitude, pos.coords.longitude);
+                },
+                err => {
+                    btn.textContent = 'Use My Location';
+                    btn.disabled = false;
+                    hideMapLoading();
+                    setStatus('Location access denied. Try searching by ZIP code instead.', 'var(--pop-coral)');
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        }
+
+        // Auto-locate on page load
+        window.addEventListener('load', () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    pos => {
+                        fetchRetailers(pos.coords.latitude, pos.coords.longitude);
+                    },
+                    err => {
+                        // Fall back silently — user can search manually
+                        hideMapLoading();
+                        setStatus('Allow location access or search by ZIP code to find stores near you.', '#9ca3af');
+                    },
+                    { enableHighAccuracy: true, timeout: 8000 }
+                );
+            } else {
+                hideMapLoading();
+            }
+        });
+        {% endif %}
+    </script>
+</body>
+</html>

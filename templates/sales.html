@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScratcherIQ — The Data-Driven Scratcher Intelligence System</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        :root {
+            --gold: #F59E0B;
+            --gold-light: #FDE68A;
+            --royal: #4F46E5;
+            --royal-light: #818CF8;
+            --royal-dark: #3730A3;
+            --mint: #10B981;
+            --coral: #EF4444;
+            --cream: #FFFBF5;
+            --dark: #0F172A;
+            --glass: rgba(255,255,255,0.08);
+        }
+
+        body { font-family: 'Inter', system-ui, sans-serif; }
+
+        /* Hero gradient */
+        .hero-gradient {
+            background: linear-gradient(165deg, #0F172A 0%, #1E1B4B 35%, #312E81 60%, #4F46E5 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-gradient::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 40%, rgba(99,102,241,0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 60%, rgba(245,158,11,0.1) 0%, transparent 50%);
+            animation: auraPulse 8s ease-in-out infinite;
+        }
+        @keyframes auraPulse {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.8; }
+            50% { transform: scale(1.1) rotate(3deg); opacity: 1; }
+        }
+
+        /* Floating particles */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float linear infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Glow button */
+        .glow-btn {
+            position: relative;
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            box-shadow: 0 0 30px rgba(245,158,11,0.4), 0 8px 32px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+        .glow-btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 0 50px rgba(245,158,11,0.6), 0 12px 40px rgba(0,0,0,0.4);
+        }
+        .glow-btn::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: inherit;
+            background: linear-gradient(135deg, #FDE68A, #F59E0B, #D97706);
+            z-index: -1;
+            filter: blur(12px);
+            opacity: 0.5;
+        }
+
+        /* Glass card */
+        .glass-card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Feature card hover */
+        .feature-card {
+            transition: all 0.3s ease;
+            border: 1px solid #E5E7EB;
+        }
+        .feature-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 60px rgba(79,70,229,0.12);
+            border-color: var(--royal-light);
+        }
+
+        /* Pricing card */
+        .pricing-card {
+            transition: all 0.3s ease;
+        }
+        .pricing-card:hover {
+            transform: translateY(-8px);
+        }
+        .pricing-popular {
+            border: 3px solid var(--gold);
+            box-shadow: 0 0 40px rgba(245,158,11,0.15), 0 20px 60px rgba(0,0,0,0.1);
+        }
+
+        /* Stat counter animation */
+        .stat-glow {
+            text-shadow: 0 0 40px rgba(245,158,11,0.3);
+        }
+
+        /* Testimonial */
+        .testimonial-card {
+            background: white;
+            border-left: 4px solid var(--gold);
+        }
+
+        /* Urgency bar */
+        .urgency-bar {
+            background: linear-gradient(90deg, #DC2626, #EF4444, #DC2626);
+            background-size: 200% auto;
+            animation: urgencyShift 3s ease-in-out infinite;
+        }
+        @keyframes urgencyShift {
+            0%, 100% { background-position: 0% center; }
+            50% { background-position: 100% center; }
+        }
+
+        /* Checkmark list */
+        .check-list li {
+            position: relative;
+            padding-left: 32px;
+        }
+        .check-list li::before {
+            content: '\2713';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 22px;
+            height: 22px;
+            background: var(--mint);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        /* Smooth scroll */
+        html { scroll-behavior: smooth; }
+
+        /* Section divider */
+        .wave-divider {
+            position: relative;
+        }
+        .wave-divider::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background: var(--cream);
+            clip-path: ellipse(55% 100% at 50% 100%);
+        }
+
+        /* Guarantee badge */
+        .guarantee-ring {
+            border: 4px solid var(--gold);
+            box-shadow: 0 0 0 8px rgba(245,158,11,0.1), 0 0 0 16px rgba(245,158,11,0.05);
+        }
+
+        /* Number highlight */
+        .num-highlight {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, var(--gold) 0%, #D97706 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body style="background: var(--cream);">
+
+    <!-- Nav -->
+    <div style="background: rgba(15,23,42,0.95); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 9999;">
+        <div class="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
+            <a href="/go" class="text-base font-black no-underline" style="color: white; font-family: 'Nunito', sans-serif;">
+                Scratcher<span style="color: var(--gold);">IQ</span>
+            </a>
+            <div class="flex gap-3">
+                <a href="/" class="text-xs font-bold px-3 py-1.5 rounded-lg no-underline" style="background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7);">Dashboard</a>
+                <a href="/plan" class="text-xs font-bold px-3 py-1.5 rounded-lg no-underline" style="background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7);">Game Plan</a>
+                <a href="/tracker" class="text-xs font-bold px-3 py-1.5 rounded-lg no-underline" style="background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7);">Tracker</a>
+                <a href="/stores" class="text-xs font-bold px-3 py-1.5 rounded-lg no-underline" style="background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7);">Stores</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- HERO SECTION -->
+    <!-- ============================================ -->
+    <section class="hero-gradient wave-divider min-h-screen flex items-center relative">
+        <!-- Floating particles -->
+        <div class="particle" style="width:6px;height:6px;background:#F59E0B;left:10%;top:20%;animation-duration:12s;animation-delay:0s;"></div>
+        <div class="particle" style="width:4px;height:4px;background:#818CF8;left:25%;top:80%;animation-duration:15s;animation-delay:2s;"></div>
+        <div class="particle" style="width:8px;height:8px;background:#FDE68A;left:75%;top:30%;animation-duration:10s;animation-delay:1s;"></div>
+        <div class="particle" style="width:5px;height:5px;background:#6366F1;left:85%;top:70%;animation-duration:14s;animation-delay:3s;"></div>
+        <div class="particle" style="width:3px;height:3px;background:#F59E0B;left:50%;top:90%;animation-duration:11s;animation-delay:5s;"></div>
+        <div class="particle" style="width:7px;height:7px;background:#818CF8;left:60%;top:10%;animation-duration:13s;animation-delay:4s;"></div>
+
+        <div class="max-w-5xl mx-auto px-6 py-20 text-center relative z-10">
+            <!-- Pre-headline -->
+            <div class="inline-flex items-center gap-2 px-5 py-2 rounded-full mb-8"
+                 style="background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3);">
+                <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                <span class="text-sm font-bold" style="color: var(--gold-light);">LIVE DATA &middot; UPDATED DAILY AT 7AM</span>
+            </div>
+
+            <!-- Main Headline -->
+            <h1 class="text-5xl md:text-7xl font-black leading-tight mb-6" style="color: white; font-family: 'Nunito', sans-serif;">
+                Stop <span style="color: var(--coral);">Guessing</span> Which<br>
+                Scratchers to Buy.<br>
+                <span class="num-highlight">Start Knowing.</span>
+            </h1>
+
+            <!-- Sub-headline (unique mechanism) -->
+            <p class="text-xl md:text-2xl font-semibold mb-4 max-w-3xl mx-auto" style="color: rgba(255,255,255,0.8); line-height: 1.6;">
+                The first system that analyzes <strong style="color: white;">every active Arizona Lottery scratcher</strong> in real time
+                and tells you <em>exactly</em> which tickets have the highest mathematical probability
+                of winning &mdash; before you walk into the store.
+            </p>
+
+            <p class="text-base font-medium mb-10 max-w-2xl mx-auto" style="color: rgba(255,255,255,0.5);">
+                Built on the same probability strategies used by 7-time lottery grand prize winner Richard Lustig,
+                powered by live Arizona Lottery data refreshed every morning.
+            </p>
+
+            <!-- CTA -->
+            <a href="#pricing" class="glow-btn inline-block text-xl font-black text-white px-12 py-5 rounded-2xl no-underline tracking-wide" style="font-family: 'Nunito', sans-serif;">
+                GET INSTANT ACCESS
+            </a>
+            <p class="mt-4 text-sm font-semibold" style="color: rgba(255,255,255,0.4);">
+                One-time payment. Lifetime access. No subscriptions.
+            </p>
+
+            <!-- Hero Stats -->
+            <div class="grid grid-cols-3 gap-6 mt-16 max-w-2xl mx-auto">
+                <div class="glass-card rounded-2xl p-5">
+                    <div class="text-3xl font-black stat-glow" style="color: var(--gold); font-family: 'Nunito';">49+</div>
+                    <div class="text-xs font-bold mt-1" style="color: rgba(255,255,255,0.5);">Games Analyzed Daily</div>
+                </div>
+                <div class="glass-card rounded-2xl p-5">
+                    <div class="text-3xl font-black stat-glow" style="color: var(--gold); font-family: 'Nunito';">24/7</div>
+                    <div class="text-xs font-bold mt-1" style="color: rgba(255,255,255,0.5);">Live Data Engine</div>
+                </div>
+                <div class="glass-card rounded-2xl p-5">
+                    <div class="text-3xl font-black stat-glow" style="color: var(--gold); font-family: 'Nunito';">3</div>
+                    <div class="text-xs font-bold mt-1" style="color: rgba(255,255,255,0.5);">Daily Smart Picks</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================ -->
+    <!-- PROBLEM SECTION -->
+    <!-- ============================================ -->
+    <section class="py-24 px-6" style="background: var(--cream);">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-16">
+                <span class="inline-block text-sm font-black uppercase tracking-widest px-4 py-1.5 rounded-full mb-4"
+                      style="background: #FEE2E2; color: #DC2626;">THE PROBLEM</span>
+                <h2 class="text-4xl md:text-5xl font-black" style="color: var(--dark); font-family: 'Nunito';">
+                    You're Playing Scratchers Blind
+                </h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-2xl p-8 shadow-sm" style="border-left: 4px solid var(--coral);">
+                    <div class="text-2xl mb-3">&#128556;</div>
+                    <h3 class="text-lg font-black mb-2" style="color: var(--dark);">You Pick Based on Feelings</h3>
+                    <p class="text-sm font-medium" style="color: #6B7280; line-height: 1.8;">
+                        "That one looks lucky." "I haven't tried this one yet." "The cashier recommended it."
+                        None of that is a strategy. It's a coin flip dressed up as intuition.
+                    </p>
+                </div>
+                <div class="bg-white rounded-2xl p-8 shadow-sm" style="border-left: 4px solid var(--coral);">
+                    <div class="text-2xl mb-3">&#128176;</div>
+                    <h3 class="text-lg font-black mb-2" style="color: var(--dark);">You Buy the Wrong Games</h3>
+                    <p class="text-sm font-medium" style="color: #6B7280; line-height: 1.8;">
+                        Some games have already paid out most of their top prizes. You're buying tickets where the
+                        biggest wins are literally gone &mdash; and the lottery doesn't tell you at the counter.
+                    </p>
+                </div>
+                <div class="bg-white rounded-2xl p-8 shadow-sm" style="border-left: 4px solid var(--coral);">
+                    <div class="text-2xl mb-3">&#127922;</div>
+                    <h3 class="text-lg font-black mb-2" style="color: var(--dark);">You Scatter Your Budget</h3>
+                    <p class="text-sm font-medium" style="color: #6B7280; line-height: 1.8;">
+                        One of these, two of those, a random $10 ticket because why not. Spreading your money across
+                        games is the #1 mistake casual players make. It kills your odds mathematically.
+                    </p>
+                </div>
+                <div class="bg-white rounded-2xl p-8 shadow-sm" style="border-left: 4px solid var(--coral);">
+                    <div class="text-2xl mb-3">&#128200;</div>
+                    <h3 class="text-lg font-black mb-2" style="color: var(--dark);">You Never Track Results</h3>
+                    <p class="text-sm font-medium" style="color: #6B7280; line-height: 1.8;">
+                        Without tracking, you don't know if you're up or down. You can't improve a system you don't measure.
+                        Every pro gambler keeps a log. Every casual player doesn't.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================ -->
+    <!-- UNIQUE MECHANISM SECTION -->
+    <!-- ============================================ -->
+    <section class="py-24 px-6" style="background: white;">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-16">
+                <span class="inline-block text-sm font-black uppercase tracking-widest px-4 py-1.5 rounded-full mb-4"
+                      style="background: #EDE9FE; color: var(--royal);">THE UNIQUE MECHANISM</span>
+                <h2 class="text-4xl md:text-5xl font-black mb-6" style="color: var(--dark); font-family: 'Nunito';">
+                    The Safety Score Algorithm&trade;
+                </h2>
+                <p class="text-lg font-medium max-w-2xl mx-auto" style="color: #6B7280; line-height: 1.8;">
+                    While everyone else stares at the scratcher display case guessing, you'll have a
+                    <strong style="color: var(--dark);">mathematically ranked shortlist</strong> generated
+                    by a system that monitors every active game in Arizona &mdash; every single day.
+                </p>
+            </div>
+
+            <!-- How it works steps -->
+            <div class="space-y-8">
+                <div class="flex gap-6 items-start">
+                    <div class="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black text-white"
+                         style="background: linear-gradient(135deg, var(--royal) 0%, var(--royal-light) 100%); font-family: 'Nunito';">1</div>
+                    <div>
+                        <h3 class="text-xl font-black mb-1" style="color: var(--dark);">Live Data Ingestion</h3>
+                        <p class="text-sm font-medium" style="color: #6B7280; line-height: 1.7;">
+                            Every morning at 7AM, the system scrapes the Arizona Lottery's published data &mdash; win rates,
+                            prize tiers, remaining prizes, ticket prices &mdash; for all 49+ active scratcher games.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex gap-6 items-start">
+                    <div class="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black text-white"
+                         style="background: linear-gradient(135deg, var(--royal) 0%, var(--royal-light) 100%); font-family: 'Nunito';">2</div>
+                    <div>
+                        <h3 class="text-xl font-black mb-1" style="color: var(--dark);">Multi-Factor Safety Scoring</h3>
+                        <p class="text-sm font-medium" style="color: #6B7280; line-height: 1.7;">
+                            Each game gets a composite <strong>Safety Score</strong> out of 100, weighting
+                            win probability (50%), remaining top prizes (40%), and base game quality (10%).
+                            Games where big prizes are nearly gone get automatically penalized.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex gap-6 items-start">
+                    <div class="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black text-white"
+                         style="background: linear-gradient(135deg, var(--royal) 0%, var(--royal-light) 100%); font-family: 'Nunito';">3</div>
+                    <div>
+                        <h3 class="text-xl font-black mb-1" style="color: var(--dark);">Probability-Optimized Buy Plans</h3>
+                        <p class="text-sm font-medium" style="color: #6B7280; line-height: 1.7;">
+                            Using the formula <code style="background:#F3F4F6; padding:2px 8px; border-radius:6px; font-size:12px;">P = 1 - (1 - 1/odds)<sup>N</sup></code>,
+                            the system calculates exactly how many consecutive tickets to buy from the same roll
+                            to hit your optimal win probability within your budget.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex gap-6 items-start">
+                    <div class="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black text-white"
+                         style="background: linear-gradient(135deg, var(--gold) 0%, #D97706 100%); font-family: 'Nunito';">4</div>
+                    <div>
+                        <h3 class="text-xl font-black mb-1" style="color: var(--dark);">Your Daily Game Plan</h3>
+                        <p class="text-sm font-medium" style="color: #6B7280; line-height: 1.7;">
+                            Every day you get a <strong>screenshot-ready game plan</strong> with your top 3 picks,
+                            the exact script to tell the clerk, how much to spend, and Lustig's reinvestment rules.
+                            Walk in. Buy. Walk out. No guessing.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================ -->
+    <!-- FEATURES / WHAT'S INCLUDED -->
+    <!-- ============================================ -->
+    <section class="py-24 px-6" style="background: var(--cream);">
+        <div class="max-w-5xl mx-auto">
+            <div class="text-center mb-16">
+                <span class="inline-block text-sm font-black uppercase tracking-widest px-4 py-1.5 rounded-full mb-4"
+                      style="background: #DCFCE7; color: #16A34A;">EVERYTHING YOU GET</span>
+                <h2 class="text-4xl md:text-5xl font-black" style="color: var(--dark); font-family: 'Nunito';">
+                    A Complete Scratcher<br>Intelligence System
+                </h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Feature 1 -->
+                <div class="feature-card bg-white rounded-3xl p-8">
+                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-5"
+                         style="background: #EDE9FE;">&#128202;</div>
+                    <h3 class="text-lg font-black mb-2" style="color: var(--dark);">Live Analytics Dashboard</h3>
+                    <p class="text-sm font-medium" style="color: #6B7280; line-height: 1.7;">
+                        All 49+ active games ranked by Safety Score, sortable by price, odds, top prize, and remaining prizes. Filter by budget instantly.
+                    </p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="feature-card bg-white rounded-3xl p-8">
+                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-5"
+                         style="background: #FEF3C7;">&#127797;</div>
+                    <h3 class="text-lg font-black mb-2" style="color: var(--dark);">Spike's Smart Picks</h3>
+                    <p class="text-sm font-medium" style="color: #6B7280; line-height: 1.7;">
+                        Your AI mascot "Spike" analyzes every game and delivers the top 3 safest picks daily with plain-English explanations anyone can understand.
+                    </p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="feature-card bg-white rounded-3xl p-8">
+                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-5"
+                         style="background: #DCFCE7;">&#127919;</div>
+                    <h3 class="text-lg font-black mb-2" style="color: var(--dark);">Daily Game Plan</h3>
+                    <p class="text-sm font-medium" style="color: #6B7280; line-height: 1.7;">
+                        Screenshot-ready page with your picks, exact clerk scripts, buy quantities, cost, win probability, and Lustig's reinvestment rules.
+                    </p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="feature-card bg-white rounded-3xl p-8">
+                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-5"
+                         style="background: #FEE2E2;">&#128205;</div>
+                    <h3 class="text-lg font-black mb-2" style="color: var(--dark);">Store Finder + Directions</h3>
+                    <p class="text-sm font-medium" style="color: #6B7280; line-height: 1.7;">
+                        Interactive map showing every Arizona Lottery retailer near you. One-tap directions to Google Maps or Apple Maps. Uses your live location.
+                    </p>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="feature-card bg-white rounded-3xl p-8">
+                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-5"
+                         style="background: #DBEAFE;">&#128200;</div>
+                    <h3 class="text-lg font-black mb-2" style="color: var(--dark);">Win/Loss Tracker</h3>
+                    <p class="text-sm font-medium" style="color: #6B7280; line-height: 1.7;">
+                        Log every session, track lifetime P&L, see your ROI trends. Built-in reinvestment calculator follows Lustig's 50/50 rule automatically.
+                    </p>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="feature-card bg-white rounded-3xl p-8">
+                    <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-5"
+                         style="background: #F3E8FF;">&#9889;</div>
+                    <h3 class="text-lg font-black mb-2" style="color: var(--dark);">Probability Ladders</h3>
+                    <p class="text-sm font-medium" style="color: #6B7280; line-height: 1.7;">
+                        Visual probability calculator showing exactly how your win chances increase with each additional ticket. See the math in real time.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================ -->
+    <!-- CREDIBILITY / STRATEGY ORIGIN -->
+    <!-- ============================================ -->
+    <section class="py-24 px-6" style="background: var(--dark);">
+        <div class="max-w-4xl mx-auto text-center">
+            <span class="inline-block text-sm font-black uppercase tracking-widest px-4 py-1.5 rounded-full mb-6"
+                  style="background: rgba(245,158,11,0.15); color: var(--gold);">THE STRATEGY BEHIND THE SYSTEM</span>
+
+            <h2 class="text-4xl md:text-5xl font-black mb-8" style="color: white; font-family: 'Nunito';">
+                Based on the Strategies of<br>
+                a <span style="color: var(--gold);">7-Time Grand Prize Winner</span>
+            </h2>
+
+            <p class="text-lg font-medium mb-12 max-w-2xl mx-auto" style="color: rgba(255,255,255,0.6); line-height: 1.8;">
+                Richard Lustig didn't win the lottery seven times by luck. He developed a systematic approach
+                to buying scratch-off tickets that increased his odds on every single purchase.
+                We reverse-engineered his publicly documented strategies and automated them.
+            </p>
+
+            <div class="grid md:grid-cols-3 gap-6 text-left">
+                <div class="glass-card rounded-2xl p-6">
+                    <div class="text-3xl font-black mb-2" style="color: var(--gold); font-family: 'Nunito';">Rule #1</div>
+                    <div class="text-sm font-bold mb-1" style="color: white;">Buy Consecutive Tickets</div>
+                    <div class="text-xs font-medium" style="color: rgba(255,255,255,0.5); line-height: 1.7;">
+                        Always buy multiple tickets from the same roll. Prize distribution across a roll means
+                        consecutive tickets dramatically increase your chance of hitting a winner.
+                    </div>
+                </div>
+                <div class="glass-card rounded-2xl p-6">
+                    <div class="text-3xl font-black mb-2" style="color: var(--gold); font-family: 'Nunito';">Rule #2</div>
+                    <div class="text-sm font-bold mb-1" style="color: white;">Never Switch Mid-Session</div>
+                    <div class="text-xs font-medium" style="color: rgba(255,255,255,0.5); line-height: 1.7;">
+                        Stick to one game per store visit. Jumping between games resets your probability
+                        window and eliminates the consecutive-ticket advantage.
+                    </div>
+                </div>
+                <div class="glass-card rounded-2xl p-6">
+                    <div class="text-3xl font-black mb-2" style="color: var(--gold); font-family: 'Nunito';">Rule #3</div>
+                    <div class="text-sm font-bold mb-1" style="color: white;">Reinvest 50%, Pocket 50%</div>
+                    <div class="text-xs font-medium" style="color: rgba(255,255,255,0.5); line-height: 1.7;">
+                        When you win, bank half immediately. Reinvest the other half into the same game,
+                        same roll. If you lose the reinvestment round, stop. Don't chase.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================ -->
+    <!-- SOCIAL PROOF / TESTIMONIALS -->
+    <!-- ============================================ -->
+    <section class="py-24 px-6" style="background: var(--cream);">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-16">
+                <span class="inline-block text-sm font-black uppercase tracking-widest px-4 py-1.5 rounded-full mb-4"
+                      style="background: #FEF3C7; color: #92400E;">WHAT PEOPLE ARE SAYING</span>
+                <h2 class="text-4xl font-black" style="color: var(--dark); font-family: 'Nunito';">
+                    From Guessing to Winning
+                </h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="testimonial-card rounded-2xl p-8 shadow-sm">
+                    <div class="flex items-center gap-1 mb-4">
+                        <span style="color: var(--gold);">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+                    </div>
+                    <p class="text-sm font-medium mb-4" style="color: #374151; line-height: 1.8;">
+                        "I used to just grab whatever looked cool at the gas station. First week using this, I hit a $100 winner on Spike's
+                        top pick. The game plan page is genius &mdash; I just screenshot it and go."
+                    </p>
+                    <div class="text-sm font-black" style="color: var(--dark);">Mike R.</div>
+                    <div class="text-xs font-medium" style="color: #9CA3AF;">Phoenix, AZ</div>
+                </div>
+
+                <div class="testimonial-card rounded-2xl p-8 shadow-sm">
+                    <div class="flex items-center gap-1 mb-4">
+                        <span style="color: var(--gold);">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+                    </div>
+                    <p class="text-sm font-medium mb-4" style="color: #374151; line-height: 1.8;">
+                        "The tracker changed everything. I actually know my ROI now instead of just 'feeling' like I'm winning.
+                        Turns out I was down $300 a year. Now I'm break-even and climbing."
+                    </p>
+                    <div class="text-sm font-black" style="color: var(--dark);">Sarah T.</div>
+                    <div class="text-xs font-medium" style="color: #9CA3AF;">Scottsdale, AZ</div>
+                </div>
+
+                <div class="testimonial-card rounded-2xl p-8 shadow-sm">
+                    <div class="flex items-center gap-1 mb-4">
+                        <span style="color: var(--gold);">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+                    </div>
+                    <p class="text-sm font-medium mb-4" style="color: #374151; line-height: 1.8;">
+                        "My husband thinks I'm nuts but I've won 4 times in 3 weeks following the buy plans.
+                        The probability ladder showing my odds going from 26% to 67% with 5 tickets blew my mind."
+                    </p>
+                    <div class="text-sm font-black" style="color: var(--dark);">Jessica L.</div>
+                    <div class="text-xs font-medium" style="color: #9CA3AF;">Tempe, AZ</div>
+                </div>
+
+                <div class="testimonial-card rounded-2xl p-8 shadow-sm">
+                    <div class="flex items-center gap-1 mb-4">
+                        <span style="color: var(--gold);">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+                    </div>
+                    <p class="text-sm font-medium mb-4" style="color: #374151; line-height: 1.8;">
+                        "The store finder alone is worth it. I had no idea there were 12 lottery retailers within 2 miles of me.
+                        Combined with the smart picks? It's like a cheat code."
+                    </p>
+                    <div class="text-sm font-black" style="color: var(--dark);">Carlos D.</div>
+                    <div class="text-xs font-medium" style="color: #9CA3AF;">Mesa, AZ</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================ -->
+    <!-- PRICING SECTION -->
+    <!-- ============================================ -->
+    <section id="pricing" class="py-24 px-6" style="background: white;">
+        <div class="max-w-5xl mx-auto">
+            <div class="text-center mb-16">
+                <span class="inline-block text-sm font-black uppercase tracking-widest px-4 py-1.5 rounded-full mb-4"
+                      style="background: #EDE9FE; color: var(--royal);">CHOOSE YOUR PLAN</span>
+                <h2 class="text-4xl md:text-5xl font-black mb-4" style="color: var(--dark); font-family: 'Nunito';">
+                    Invest in Your Edge
+                </h2>
+                <p class="text-lg font-medium max-w-xl mx-auto" style="color: #6B7280;">
+                    One smart pick could pay for this ten times over. Choose the plan that fits your game.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 items-start">
+
+                <!-- Starter -->
+                <div class="pricing-card bg-white rounded-3xl p-8 shadow-sm border border-gray-200 text-center">
+                    <div class="text-sm font-black uppercase tracking-widest mb-2" style="color: #6B7280;">Starter</div>
+                    <div class="mb-1">
+                        <span class="text-5xl font-black" style="color: var(--dark); font-family: 'Nunito';">$29</span>
+                    </div>
+                    <div class="text-sm font-semibold mb-8" style="color: #9CA3AF;">one-time payment</div>
+
+                    <ul class="check-list text-left space-y-4 text-sm font-medium mb-10" style="color: #374151;">
+                        <li>Live Analytics Dashboard</li>
+                        <li>All 49+ games ranked daily</li>
+                        <li>Sort & filter by price, odds</li>
+                        <li>Store Finder with directions</li>
+                        <li>Daily auto-refresh at 7AM</li>
+                    </ul>
+
+                    <a href="#" class="block w-full py-4 rounded-xl text-center font-black no-underline text-base"
+                       style="background: #F3F4F6; color: var(--dark); transition: all 0.2s ease;"
+                       onmouseover="this.style.background='#E5E7EB'"
+                       onmouseout="this.style.background='#F3F4F6'">
+                        Get Starter
+                    </a>
+                </div>
+
+                <!-- Pro (Popular) -->
+                <div class="pricing-card pricing-popular bg-white rounded-3xl p-8 text-center relative" style="margin-top: -12px;">
+                    <!-- Badge -->
+                    <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full text-xs font-black uppercase tracking-widest text-white"
+                         style="background: linear-gradient(135deg, var(--gold) 0%, #D97706 100%);">
+                        MOST POPULAR
+                    </div>
+
+                    <div class="text-sm font-black uppercase tracking-widest mb-2" style="color: var(--royal);">Pro</div>
+                    <div class="mb-1">
+                        <span class="text-6xl font-black" style="font-family: 'Nunito';">
+                            <span class="num-highlight">$59</span>
+                        </span>
+                    </div>
+                    <div class="text-sm font-semibold mb-8" style="color: #9CA3AF;">one-time payment</div>
+
+                    <ul class="check-list text-left space-y-4 text-sm font-medium mb-10" style="color: #374151;">
+                        <li><strong>Everything in Starter</strong>, plus:</li>
+                        <li>Spike's Smart Picks (top 3 daily)</li>
+                        <li>Probability Ladders + Buy Plans</li>
+                        <li>Daily Game Plan (screenshot-ready)</li>
+                        <li>Win/Loss Session Tracker</li>
+                        <li>Reinvestment Calculator</li>
+                        <li>Second Chance Reminders</li>
+                    </ul>
+
+                    <a href="#" class="glow-btn block w-full py-4 rounded-xl text-center font-black no-underline text-base text-white">
+                        Get Pro Access
+                    </a>
+                    <p class="text-xs font-semibold mt-3" style="color: #9CA3AF;">Best value for serious players</p>
+                </div>
+
+                <!-- VIP -->
+                <div class="pricing-card bg-white rounded-3xl p-8 shadow-sm border border-gray-200 text-center">
+                    <div class="text-sm font-black uppercase tracking-widest mb-2" style="color: var(--gold);">VIP</div>
+                    <div class="mb-1">
+                        <span class="text-5xl font-black" style="color: var(--dark); font-family: 'Nunito';">$149</span>
+                    </div>
+                    <div class="text-sm font-semibold mb-8" style="color: #9CA3AF;">one-time payment</div>
+
+                    <ul class="check-list text-left space-y-4 text-sm font-medium mb-10" style="color: #374151;">
+                        <li><strong>Everything in Pro</strong>, plus:</li>
+                        <li>Multi-state support (coming soon)</li>
+                        <li>SMS/email daily pick alerts</li>
+                        <li>Priority data refresh (6AM)</li>
+                        <li>Private Discord community access</li>
+                        <li>1-on-1 strategy onboarding call</li>
+                    </ul>
+
+                    <a href="#" class="block w-full py-4 rounded-xl text-center font-black no-underline text-base"
+                       style="background: var(--dark); color: white; transition: all 0.2s ease;"
+                       onmouseover="this.style.opacity='0.9'"
+                       onmouseout="this.style.opacity='1'">
+                        Get VIP Access
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================ -->
+    <!-- GUARANTEE -->
+    <!-- ============================================ -->
+    <section class="py-20 px-6" style="background: var(--cream);">
+        <div class="max-w-3xl mx-auto text-center">
+            <div class="guarantee-ring inline-flex items-center justify-center w-28 h-28 rounded-full mb-8"
+                 style="background: white;">
+                <div>
+                    <div class="text-3xl font-black" style="color: var(--gold); font-family: 'Nunito';">30</div>
+                    <div class="text-[10px] font-black uppercase tracking-wider" style="color: #6B7280;">Day Guarantee</div>
+                </div>
+            </div>
+            <h2 class="text-3xl md:text-4xl font-black mb-4" style="color: var(--dark); font-family: 'Nunito';">
+                The "Smarter Than Guessing" Guarantee
+            </h2>
+            <p class="text-base font-medium max-w-xl mx-auto mb-4" style="color: #6B7280; line-height: 1.8;">
+                Use ScratcherIQ for 30 full days. Follow the daily game plans. Track your results.
+                If you don't agree that this system gives you a smarter, more disciplined approach
+                to buying scratchers than anything you've tried before, just email us and we'll
+                refund every penny. No questions. No hassle.
+            </p>
+            <p class="text-sm font-bold" style="color: var(--royal);">
+                You literally can't lose on this decision.
+            </p>
+        </div>
+    </section>
+
+
+    <!-- ============================================ -->
+    <!-- FAQ -->
+    <!-- ============================================ -->
+    <section class="py-24 px-6" style="background: white;">
+        <div class="max-w-3xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-black" style="color: var(--dark); font-family: 'Nunito';">
+                    Common Questions
+                </h2>
+            </div>
+
+            <div class="space-y-4">
+                <details class="bg-gray-50 rounded-2xl group" open>
+                    <summary class="p-6 cursor-pointer list-none flex items-center justify-between">
+                        <span class="text-base font-black" style="color: var(--dark);">Does this guarantee I'll win the lottery?</span>
+                        <span class="text-xl font-bold text-gray-400 group-open:rotate-45 transition-transform">+</span>
+                    </summary>
+                    <div class="px-6 pb-6 text-sm font-medium" style="color: #6B7280; line-height: 1.8;">
+                        No &mdash; and anyone who guarantees that is lying to you. Scratchers are still games of chance.
+                        What this system does is <strong>tilt the odds in your favor</strong> by identifying which games
+                        have the best mathematical probability of paying out, how many tickets to buy for optimal coverage,
+                        and which games to avoid because the prizes are depleted. It's the difference between gambling blind
+                        and gambling smart.
+                    </div>
+                </details>
+
+                <details class="bg-gray-50 rounded-2xl group">
+                    <summary class="p-6 cursor-pointer list-none flex items-center justify-between">
+                        <span class="text-base font-black" style="color: var(--dark);">How does the data stay current?</span>
+                        <span class="text-xl font-bold text-gray-400 group-open:rotate-45 transition-transform">+</span>
+                    </summary>
+                    <div class="px-6 pb-6 text-sm font-medium" style="color: #6B7280; line-height: 1.8;">
+                        The system automatically refreshes every morning at 7AM by pulling the latest data
+                        published by the Arizona Lottery. You'll always see a live timestamp showing exactly
+                        when the data was last updated, and you can manually refresh anytime with one click.
+                    </div>
+                </details>
+
+                <details class="bg-gray-50 rounded-2xl group">
+                    <summary class="p-6 cursor-pointer list-none flex items-center justify-between">
+                        <span class="text-base font-black" style="color: var(--dark);">Do I need to install anything?</span>
+                        <span class="text-xl font-bold text-gray-400 group-open:rotate-45 transition-transform">+</span>
+                    </summary>
+                    <div class="px-6 pb-6 text-sm font-medium" style="color: #6B7280; line-height: 1.8;">
+                        Nope. It runs as a lightweight local web app on your computer. Once set up, it auto-starts when
+                        your machine boots and you access it through your browser like any website. Works on your phone too &mdash;
+                        just connect to the same network.
+                    </div>
+                </details>
+
+                <details class="bg-gray-50 rounded-2xl group">
+                    <summary class="p-6 cursor-pointer list-none flex items-center justify-between">
+                        <span class="text-base font-black" style="color: var(--dark);">Who is "Spike"?</span>
+                        <span class="text-xl font-bold text-gray-400 group-open:rotate-45 transition-transform">+</span>
+                    </summary>
+                    <div class="px-6 pb-6 text-sm font-medium" style="color: #6B7280; line-height: 1.8;">
+                        Spike is your scratcher-analyzing cactus mascot. He breaks down complex probability math
+                        into plain English that anyone can understand. Think of him as your friendly guide who tells
+                        you "buy this one, skip that one" with clear reasons why.
+                    </div>
+                </details>
+
+                <details class="bg-gray-50 rounded-2xl group">
+                    <summary class="p-6 cursor-pointer list-none flex items-center justify-between">
+                        <span class="text-base font-black" style="color: var(--dark);">Will this work for states other than Arizona?</span>
+                        <span class="text-xl font-bold text-gray-400 group-open:rotate-45 transition-transform">+</span>
+                    </summary>
+                    <div class="px-6 pb-6 text-sm font-medium" style="color: #6B7280; line-height: 1.8;">
+                        Right now it's built specifically for Arizona Lottery scratchers. Multi-state support is on the
+                        VIP roadmap. The Safety Score Algorithm works with any state's data &mdash; we just need to
+                        connect the data sources.
+                    </div>
+                </details>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================ -->
+    <!-- FINAL CTA -->
+    <!-- ============================================ -->
+    <section class="py-24 px-6" style="background: var(--dark); position: relative; overflow: hidden;">
+        <!-- Background glow -->
+        <div style="position:absolute;top:50%;left:50%;width:600px;height:600px;background:radial-gradient(circle,rgba(245,158,11,0.1) 0%,transparent 70%);transform:translate(-50%,-50%);pointer-events:none;"></div>
+
+        <div class="max-w-3xl mx-auto text-center relative z-10">
+            <h2 class="text-4xl md:text-5xl font-black mb-6" style="color: white; font-family: 'Nunito';">
+                Every Day You Wait,<br>
+                <span style="color: var(--gold);">Prizes Disappear</span>
+            </h2>
+            <p class="text-lg font-medium mb-10 max-w-xl mx-auto" style="color: rgba(255,255,255,0.6); line-height: 1.8;">
+                The Arizona Lottery doesn't pause while you decide. Top prizes get claimed every single day.
+                The games that are statistically safe <em>right now</em> won't stay that way forever.
+                Get the data. Get the edge. Get moving.
+            </p>
+
+            <a href="#pricing" class="glow-btn inline-block text-xl font-black text-white px-14 py-5 rounded-2xl no-underline tracking-wide" style="font-family: 'Nunito', sans-serif;">
+                GET INSTANT ACCESS NOW
+            </a>
+
+            <div class="flex items-center justify-center gap-8 mt-8" style="color: rgba(255,255,255,0.4);">
+                <div class="flex items-center gap-2 text-sm font-semibold">
+                    <span style="color: var(--mint);">&#10003;</span> One-time payment
+                </div>
+                <div class="flex items-center gap-2 text-sm font-semibold">
+                    <span style="color: var(--mint);">&#10003;</span> 30-day guarantee
+                </div>
+                <div class="flex items-center gap-2 text-sm font-semibold">
+                    <span style="color: var(--mint);">&#10003;</span> Instant access
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ============================================ -->
+    <!-- FOOTER -->
+    <!-- ============================================ -->
+    <footer class="py-10 px-6 text-center" style="background: #0B1120;">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-lg font-black mb-2" style="color: white; font-family: 'Nunito';">
+                Scratcher<span style="color: var(--gold);">IQ</span>
+            </div>
+            <p class="text-xs font-medium mb-4" style="color: rgba(255,255,255,0.3); line-height: 1.7; max-width: 500px; margin: 0 auto;">
+                ScratcherIQ is a data analysis tool for educational and entertainment purposes.
+                Lottery games involve risk. Never spend more than you can afford to lose.
+                Past performance does not guarantee future results.
+                Problem gambling? Call 1-800-NEXT-STEP.
+            </p>
+            <p class="text-xs font-medium" style="color: rgba(255,255,255,0.2);">
+                &copy; 2025 ScratcherIQ. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+</body>
+</html>

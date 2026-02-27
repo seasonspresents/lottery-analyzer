@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html data-theme="cupcake">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ state_cfg.abbreviation }} Scratcher Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap');
+
+        :root {
+            --pop-coral: #FF6B6B;
+            --pop-green: #58CC02;
+            --pop-yellow: #FFC800;
+            --pop-purple: #A855F7;
+            --pop-blue: #38BDF8;
+            --pop-pink: #F472B6;
+            --pop-orange: #FB923C;
+            --pop-cream: #FFF8F0;
+            --pop-mint: #6EE7B7;
+        }
+        body {
+            font-family: 'Nunito', system-ui, sans-serif;
+            background: var(--pop-cream);
+        }
+
+        /* Bubbly card hover */
+        .pop-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .pop-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.1);
+        }
+
+        /* Fun gradient backgrounds for best-pick cards */
+        .gradient-coral { background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%); }
+        .gradient-green { background: linear-gradient(135deg, #58CC02 0%, #7ED957 100%); }
+        .gradient-yellow { background: linear-gradient(135deg, #FFC800 0%, #FFD84D 100%); }
+        .gradient-purple { background: linear-gradient(135deg, #A855F7 0%, #C084FC 100%); }
+        .gradient-blue { background: linear-gradient(135deg, #38BDF8 0%, #7DD3FC 100%); }
+        .gradient-pink { background: linear-gradient(135deg, #F472B6 0%, #F9A8D4 100%); }
+        .gradient-orange { background: linear-gradient(135deg, #FB923C 0%, #FDBA74 100%); }
+        .gradient-mint { background: linear-gradient(135deg, #6EE7B7 0%, #A7F3D0 100%); }
+
+        /* Score pill colors */
+        .score-great { background: var(--pop-green); color: white; }
+        .score-good { background: var(--pop-blue); color: white; }
+        .score-ok { background: var(--pop-yellow); color: #1a1a2e; }
+        .score-low { background: var(--pop-coral); color: white; }
+
+        /* Remaining badges */
+        .remaining-high { background: #DCFCE7; color: #166534; }
+        .remaining-mid { background: #FEF9C3; color: #854D0E; }
+        .remaining-low { background: #FEE2E2; color: #991B1B; }
+
+        /* Table row hover */
+        .game-row { transition: background 0.15s ease; }
+        .game-row:hover { background: #FFF0E6 !important; }
+
+        /* Refresh button bounce */
+        @keyframes bounce-subtle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-2px); }
+        }
+        .refresh-bounce:hover { animation: bounce-subtle 0.4s ease; }
+
+        /* Spinner */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        /* Price tag pills */
+        .price-1 { background: #DBEAFE; color: #1E40AF; }
+        .price-2 { background: #D1FAE5; color: #065F46; }
+        .price-3 { background: #FEF3C7; color: #92400E; }
+        .price-5 { background: #FCE7F3; color: #9D174D; }
+        .price-10 { background: #EDE9FE; color: #5B21B6; }
+        .price-20 { background: #FFEDD5; color: #9A3412; }
+        .price-30 { background: #FEE2E2; color: #991B1B; }
+        .price-50 { background: #F0FDF4; color: #166534; border: 2px solid #86EFAC; }
+
+        /* Smart Pick / Mascot section */
+        .smart-pick-section {
+            background: linear-gradient(135deg, #FFF7ED 0%, #FFF1F2 40%, #EDE9FE 100%);
+            border: 3px solid white;
+            border-radius: 28px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+            position: relative;
+            overflow: hidden;
+        }
+        .smart-pick-section::before {
+            content: '';
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(168,85,247,0.08) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        /* Cactus mascot */
+        .mascot-wrap { display: flex; align-items: flex-start; gap: 20px; margin-bottom: 24px; }
+        .mascot {
+            flex-shrink: 0;
+            width: 72px; height: 72px;
+            background: linear-gradient(135deg, var(--pop-green) 0%, #4ADE80 100%);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 38px;
+            box-shadow: 0 4px 14px rgba(88,204,2,0.3);
+            border: 3px solid white;
+        }
+        .mascot-bubble {
+            background: white;
+            border-radius: 20px;
+            padding: 16px 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            position: relative;
+            flex: 1;
+        }
+        .mascot-bubble::before {
+            content: '';
+            position: absolute;
+            left: -10px; top: 24px;
+            width: 0; height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 12px solid white;
+        }
+        .mascot-name { font-weight: 900; font-size: 15px; color: var(--pop-green); }
+        .mascot-msg { font-weight: 700; font-size: 14px; color: #374151; margin-top: 4px; line-height: 1.5; }
+
+        .smart-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .smart-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+        .smart-card-1 { border-color: var(--pop-yellow); }
+        .smart-card-2 { border-color: var(--pop-green); }
+        .smart-card-3 { border-color: var(--pop-blue); }
+
+        .smart-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 10px; font-weight: 900;
+            padding: 3px 10px;
+            border-radius: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .smart-badge-1 { background: var(--pop-yellow); color: #92400E; }
+        .smart-badge-2 { background: #D1FAE5; color: #065F46; }
+        .smart-badge-3 { background: #DBEAFE; color: #1E40AF; }
+
+        .safety-meter {
+            height: 8px;
+            border-radius: 4px;
+            background: #F3F4F6;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .safety-meter-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .smart-explanation {
+            font-size: 13px;
+            font-weight: 600;
+            color: #6B7280;
+            line-height: 1.6;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #E5E7EB;
+        }
+
+        .smart-store-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 12px;
+            font-size: 12px;
+            font-weight: 800;
+            color: white;
+            background: var(--pop-purple);
+            padding: 8px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+        .smart-store-btn:hover { opacity: 0.9; transform: scale(1.03); }
+
+        /* Live badge */
+        @keyframes blink-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .live-dot {
+            display: inline-block;
+            width: 8px; height: 8px;
+            background: var(--pop-green);
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: blink-dot 2s ease-in-out infinite;
+            vertical-align: middle;
+        }
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            background: #D1FAE5;
+            color: #065F46;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 10px;
+            margin-top: 6px;
+        }
+        .stale-badge {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+        .stale-badge .live-dot {
+            background: var(--pop-yellow);
+        }
+
+        /* Toast notification */
+        .toast-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        .toast {
+            background: white;
+            border-radius: 16px;
+            padding: 16px 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: auto;
+            border: 2px solid var(--pop-green);
+        }
+        .toast.show { transform: translateX(0); }
+        .toast-icon { font-size: 28px; }
+        .toast-text { font-weight: 800; font-size: 14px; color: #1a1a2e; }
+        .toast-sub { font-weight: 600; font-size: 11px; color: #6B7280; }
+
+        /* State picker */
+        .state-picker {
+            font-family: 'Nunito', system-ui, sans-serif;
+            font-weight: 800;
+            font-size: 14px;
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: 2px solid #E5E7EB;
+            background: white;
+            color: #1a1a2e;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%239ca3af'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 30px;
+        }
+        .state-picker:focus { border-color: var(--pop-purple); outline: none; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Header -->
+    <div class="bg-white border-b-4 border-[--pop-green] shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div>
+                    <h1 class="text-3xl font-black tracking-tight" style="color: #1a1a2e;">
+                        <span style="color: var(--pop-coral);">{{ state_cfg.abbreviation }}</span> Scratcher Analyzer
+                    </h1>
+                    <p class="text-sm font-semibold mt-1" style="color: #9ca3af;">
+                        {{ total_games }} active games &middot; Updated <span style="color: var(--pop-purple);">{{ analyzed_at[:19].replace('T', ' ') }} UTC</span>
+                    </p>
+                </div>
+                <select class="state-picker" onchange="switchState(this.value)">
+                    {% for code, cfg in states|dictsort %}
+                    <option value="{{ code }}" {% if code == state %}selected{% endif %}>{{ cfg.abbreviation }} — {{ cfg.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex gap-3 items-center flex-wrap">
+                <a href="/plan?state={{ state }}" class="font-extrabold text-sm px-5 py-2.5 rounded-xl border-2 no-underline"
+                   style="border-color: var(--pop-coral); color: var(--pop-coral); transition: all 0.15s ease;"
+                   onmouseover="this.style.background='var(--pop-coral)';this.style.color='white'"
+                   onmouseout="this.style.background='transparent';this.style.color='var(--pop-coral)'">
+                    Game Plan
+                </a>
+                <a href="/tracker?state={{ state }}" class="font-extrabold text-sm px-5 py-2.5 rounded-xl border-2 no-underline"
+                   style="border-color: var(--pop-yellow); color: #92400E; transition: all 0.15s ease;"
+                   onmouseover="this.style.background='var(--pop-yellow)';this.style.color='white'"
+                   onmouseout="this.style.background='transparent';this.style.color='#92400E'">
+                    Tracker
+                </a>
+                <a href="/stores?state={{ state }}" class="font-extrabold text-sm px-5 py-2.5 rounded-xl border-2 no-underline"
+                   style="border-color: var(--pop-purple); color: var(--pop-purple); transition: all 0.15s ease;"
+                   onmouseover="this.style.background='var(--pop-purple)';this.style.color='white'"
+                   onmouseout="this.style.background='transparent';this.style.color='var(--pop-purple)'">
+                    Store Finder
+                </a>
+                <a href="/go" class="font-extrabold text-sm px-5 py-2.5 rounded-xl border-2 no-underline"
+                   style="border-color: var(--pop-blue); color: var(--pop-blue); transition: all 0.15s ease;"
+                   onmouseover="this.style.background='var(--pop-blue)';this.style.color='white'"
+                   onmouseout="this.style.background='transparent';this.style.color='var(--pop-blue)'">
+                    ScratcherIQ
+                </a>
+                <button id="refreshBtn" onclick="refreshData()"
+                    class="refresh-bounce font-extrabold text-white text-base px-7 py-3 rounded-2xl shadow-lg cursor-pointer border-0 active:scale-95"
+                    style="background: linear-gradient(135deg, var(--pop-green) 0%, #4ADE80 100%); box-shadow: 0 4px 14px rgba(88,204,2,0.4);">
+                    Refresh Today's Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 py-8">
+
+        <!-- Smart Pick Section with Mascot -->
+        <div class="smart-pick-section">
+            <!-- Mascot intro -->
+            <div class="mascot-wrap">
+                <div class="mascot">{{ state_cfg.mascot_emoji|safe }}</div>
+                <div class="mascot-bubble">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <div class="mascot-name">{{ state_cfg.mascot_name }}</div>
+                        <div id="liveBadge" class="live-badge">
+                            <span class="live-dot"></span>
+                            <span id="liveBadgeText">Updated <span id="liveTime">{{ analyzed_at[:19].replace('T', ' ') }} UTC</span></span>
+                        </div>
+                    </div>
+                    <div class="mascot-msg">
+                        Hey! I <strong>just</strong> crunched the numbers across all {{ total_games }} active {{ state_cfg.name }} scratchers.
+                        Here are my <strong>top 3 picks for today</strong> — I balanced the win rate AND how many big prizes
+                        are still out there, so you're not chasing a game that's already been picked clean.
+                        <br><br>
+                        <span style="color: #9ca3af; font-size: 12px;">Hit the green <strong style="color: var(--pop-green);">Refresh Today's Data</strong> button anytime and I'll re-pull the latest numbers from the {{ state_cfg.name }} Lottery and re-rank everything fresh.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {% set card_borders = ['smart-card-1', 'smart-card-2', 'smart-card-3'] %}
+                {% set badge_colors = ['smart-badge-1', 'smart-badge-2', 'smart-badge-3'] %}
+                {% set badge_labels = ['#1 Top Pick', '#2 Runner Up', '#3 Solid Choice'] %}
+                {% set meter_colors = ['var(--pop-yellow)', 'var(--pop-green)', 'var(--pop-blue)'] %}
+                {% for pick in smart_picks %}
+                <div class="smart-card {{ card_borders[loop.index0] }}">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="smart-badge {{ badge_colors[loop.index0] }}">{{ badge_labels[loop.index0] }}</span>
+                        {% set p = pick.price|int %}
+                        <span class="inline-block px-3 py-1 rounded-full text-xs font-black price-{{ p }}">${{ p }} ticket</span>
+                    </div>
+
+                    <!-- Game name -->
+                    <div class="text-lg font-black mb-1" style="color: #1a1a2e;">{{ pick.name }}</div>
+                    <div class="text-xs font-bold text-gray-400 mb-3">#{{ pick.game_num }}</div>
+
+                    <!-- Stats row -->
+                    <div class="grid grid-cols-3 gap-3 text-center">
+                        <div>
+                            <div class="text-xs font-bold text-gray-400">Win Rate</div>
+                            <div class="text-lg font-black" style="color: var(--pop-green);">{{ pick.win_rate_pct }}%</div>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-gray-400">Prizes Left</div>
+                            <div class="text-lg font-black" style="color: var(--pop-purple);">{{ pick.top_prizes_remaining }}</div>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-gray-400">Top Prize</div>
+                            <div class="text-lg font-black" style="color: var(--pop-coral);">${{ "{:,.0f}".format(pick.top_prize) }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Safety meter -->
+                    <div class="mt-3">
+                        <div class="flex justify-between text-xs font-black">
+                            <span style="color: #9ca3af;">Safety Score</span>
+                            <span style="color: {{ meter_colors[loop.index0] }};">{{ pick.safety_score }}/100</span>
+                        </div>
+                        <div class="safety-meter">
+                            <div class="safety-meter-fill" style="width: {{ pick.safety_score }}%; background: {{ meter_colors[loop.index0] }};"></div>
+                        </div>
+                    </div>
+
+                    <!-- BUY RECOMMENDATION -->
+                    <div class="mt-4 p-4 rounded-2xl" style="background: linear-gradient(135deg, #FFF7ED 0%, #FEF3C7 100%); border: 2px solid #FDE68A;">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span style="font-size: 18px;">{{ state_cfg.mascot_emoji|safe }}</span>
+                            <span class="text-xs font-black uppercase tracking-wider" style="color: #92400E;">{{ state_cfg.mascot_name.split(' ')[0] }}'s Buy Plan</span>
+                        </div>
+                        <div class="flex items-baseline gap-2 mb-1">
+                            <span class="text-2xl font-black" style="color: #1a1a2e;">Buy {{ pick.buy_recommended }}</span>
+                            <span class="text-sm font-bold text-gray-500">tickets from the same roll</span>
+                        </div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <span class="inline-block px-3 py-1 rounded-lg text-xs font-black" style="background: #D1FAE5; color: #065F46;">
+                                {{ pick.buy_win_chance }}% chance of winning
+                            </span>
+                            <span class="inline-block px-3 py-1 rounded-lg text-xs font-black" style="background: #DBEAFE; color: #1E40AF;">
+                                ${{ "{:,.0f}".format(pick.buy_cost) }} total
+                            </span>
+                        </div>
+
+                        <!-- Probability ladder -->
+                        <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Your odds by # of tickets</div>
+                        <div class="space-y-1">
+                            {% for step in pick.buy_ladder %}
+                            <div class="flex items-center gap-2">
+                                <span class="text-[11px] font-black w-6 text-right {% if step.n == pick.buy_recommended %}{% else %}text-gray-400{% endif %}"
+                                      style="{% if step.n == pick.buy_recommended %}color: var(--pop-green);{% endif %}">
+                                    {{ step.n }}x
+                                </span>
+                                <div class="flex-1 h-3 rounded-full" style="background: #F3F4F6;">
+                                    <div class="h-3 rounded-full transition-all"
+                                        style="width: {{ step.chance }}%;
+                                               background: {% if step.n == pick.buy_recommended %}var(--pop-green){% elif step.chance >= 80 %}var(--pop-blue){% elif step.chance >= 50 %}var(--pop-yellow){% else %}#D1D5DB{% endif %};">
+                                    </div>
+                                </div>
+                                <span class="text-[11px] font-black w-16 text-right {% if step.n == pick.buy_recommended %}{% else %}text-gray-400{% endif %}"
+                                      style="{% if step.n == pick.buy_recommended %}color: var(--pop-green);{% endif %}">
+                                    {{ step.chance }}%
+                                </span>
+                                <span class="text-[10px] font-semibold text-gray-300 w-10 text-right">${{ "{:,.0f}".format(step.cost) }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Spike's explanation -->
+                    <div class="smart-explanation">
+                        {{ state_cfg.mascot_emoji|safe }} <strong>{{ state_cfg.mascot_name.split(' ')[0] }} says:</strong> {{ pick.smart_pick_reason }}
+                    </div>
+
+                    <!-- Find a store -->
+                    <a href="/stores?state={{ state }}" class="smart-store-btn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                        Find a store near me
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pro tips from mascot -->
+            <div class="mt-6 p-5 rounded-2xl bg-white shadow-sm">
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 text-3xl">{{ state_cfg.mascot_emoji|safe }}</div>
+                    <div>
+                        <div class="text-sm font-black mb-2" style="color: #1a1a2e;">{{ state_cfg.mascot_name.split(' ')[0] }}'s Pro Tips — How the Pros Play</div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-bold" style="color: #6B7280; line-height: 1.7;">
+                            <div>
+                                <div class="font-black text-sm mb-1" style="color: var(--pop-green);">1. Buy from the same roll</div>
+                                Winners are distributed across each roll. When you buy multiple tickets in a row from the same roll, every loser you pull means the remaining tickets are statistically more likely to contain a winner. <strong style="color:#374151;">Tell the clerk: "Give me [X] in a row from the same roll."</strong>
+                            </div>
+                            <div>
+                                <div class="font-black text-sm mb-1" style="color: var(--pop-purple);">2. Don't jump between games</div>
+                                Every time you switch games, you reset the math. Stick to one game per session. My buy plan above tells you exactly how many to get from that one game to hit a solid win probability.
+                            </div>
+                            <div>
+                                <div class="font-black text-sm mb-1" style="color: var(--pop-coral);">3. The win rate is for ANY prize</div>
+                                When I say "43% win rate," that means 43 out of 100 tickets win <em>something</em> — could be $2, could be $1,000,000. The "Prizes Left" number is only for the top-tier prize. Both matter, but don't confuse them.
+                            </div>
+                            <div>
+                                <div class="font-black text-sm mb-1" style="color: var(--pop-blue);">4. Set a budget and stick to it</div>
+                                My buy plans have built-in budget caps. I'll never recommend spending more than you should on a single session. If the math says you need 10 tickets but that's $500, I'll cap it at something reasonable and tell you the real odds at that number.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Best Picks Section -->
+        <div class="mb-10">
+            <h2 class="text-xl font-black mb-5 flex items-center gap-2" style="color: #1a1a2e;">
+                Best Pick at Each Price
+                <span class="text-xs font-bold px-3 py-1 rounded-full" style="background: var(--pop-yellow); color: #92400E;">TOP PICKS</span>
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {% set gradients = ['gradient-coral', 'gradient-green', 'gradient-blue', 'gradient-purple', 'gradient-yellow', 'gradient-pink', 'gradient-orange', 'gradient-mint'] %}
+                {% for price, game in best_per_price|dictsort %}
+                <div class="pop-card rounded-3xl p-5 text-white shadow-lg {{ gradients[loop.index0 % 8] }}">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-sm font-black bg-white/25 backdrop-blur-sm px-3 py-1 rounded-full">${{ price }} ticket</span>
+                        <span class="text-xs font-bold bg-white/20 px-2 py-0.5 rounded-full">BEST</span>
+                    </div>
+                    <div class="text-lg font-black mb-4 leading-tight">{{ game.name }}</div>
+                    <div class="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                            <div class="text-white/70 text-xs font-bold">Top Prize</div>
+                            <div class="font-extrabold">${{ "{:,.0f}".format(game.top_prize) }}</div>
+                        </div>
+                        <div>
+                            <div class="text-white/70 text-xs font-bold">Win Rate</div>
+                            <div class="font-extrabold">{{ game.win_rate_pct }}%</div>
+                        </div>
+                        <div>
+                            <div class="text-white/70 text-xs font-bold">Top Prizes Left</div>
+                            <div class="font-extrabold">{{ game.top_prizes_remaining }}</div>
+                        </div>
+                        <div>
+                            <div class="text-white/70 text-xs font-bold">Score</div>
+                            <div class="font-extrabold">{{ game.score }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <form method="GET" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-8 flex flex-wrap items-center gap-4">
+            <input type="hidden" name="state" value="{{ state }}">
+            <span class="text-sm font-extrabold" style="color: #1a1a2e;">Filter:</span>
+
+            <select name="min_price" class="select select-bordered select-sm rounded-xl font-bold">
+                <option value="0" {% if min_price == 0 %}selected{% endif %}>Any Min</option>
+                <option value="1" {% if min_price == 1 %}selected{% endif %}>$1+</option>
+                <option value="5" {% if min_price == 5 %}selected{% endif %}>$5+</option>
+                <option value="10" {% if min_price == 10 %}selected{% endif %}>$10+</option>
+                <option value="20" {% if min_price == 20 %}selected{% endif %}>$20+</option>
+                <option value="30" {% if min_price == 30 %}selected{% endif %}>$30+</option>
+            </select>
+            <span class="text-gray-400 font-bold text-sm">to</span>
+            <select name="max_price" class="select select-bordered select-sm rounded-xl font-bold">
+                <option value="1" {% if max_price == 1 %}selected{% endif %}>$1</option>
+                <option value="2" {% if max_price == 2 %}selected{% endif %}>$2</option>
+                <option value="3" {% if max_price == 3 %}selected{% endif %}>$3</option>
+                <option value="5" {% if max_price == 5 %}selected{% endif %}>$5</option>
+                <option value="10" {% if max_price == 10 %}selected{% endif %}>$10</option>
+                <option value="20" {% if max_price == 20 %}selected{% endif %}>$20</option>
+                <option value="30" {% if max_price == 30 %}selected{% endif %}>$30</option>
+                <option value="50" {% if max_price == 50 %}selected{% endif %}>$50</option>
+                <option value="999" {% if max_price == 999 %}selected{% endif %}>Any Max</option>
+            </select>
+
+            <div class="w-px h-6 bg-gray-200 mx-1"></div>
+
+            <span class="text-sm font-extrabold" style="color: #1a1a2e;">Sort:</span>
+            <select name="sort" class="select select-bordered select-sm rounded-xl font-bold">
+                <option value="score" {% if sort_by == 'score' %}selected{% endif %}>Best Overall</option>
+                <option value="odds" {% if sort_by == 'odds' %}selected{% endif %}>Win Rate</option>
+                <option value="top_prize" {% if sort_by == 'top_prize' %}selected{% endif %}>Top Prize</option>
+                <option value="remaining" {% if sort_by == 'remaining' %}selected{% endif %}>Prizes Left</option>
+                <option value="ratio" {% if sort_by == 'ratio' %}selected{% endif %}>Prize/Price Ratio</option>
+                <option value="price" {% if sort_by == 'price' %}selected{% endif %}>Price</option>
+            </select>
+
+            <button type="submit" class="btn btn-sm rounded-xl font-extrabold text-white border-0"
+                style="background: var(--pop-purple);">
+                Apply
+            </button>
+        </form>
+
+        <!-- Games Table -->
+        <div class="mb-4 flex items-center gap-3">
+            <h2 class="text-xl font-black" style="color: #1a1a2e;">All Games</h2>
+            <span class="text-xs font-bold px-3 py-1 rounded-full" style="background: #EDE9FE; color: #5B21B6;">{{ games|length }} games</span>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b-2 border-gray-100">
+                            <th class="px-5 py-4 text-left text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
+                                <a href="?sort=score&min_price={{ min_price }}&max_price={{ max_price }}&state={{ state }}" class="hover:text-[--pop-purple] no-underline" style="color: inherit;">#</a>
+                            </th>
+                            <th class="px-5 py-4 text-left text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">Game</th>
+                            <th class="px-5 py-4 text-left text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
+                                <a href="?sort=price&min_price={{ min_price }}&max_price={{ max_price }}&state={{ state }}" class="hover:text-[--pop-purple] no-underline" style="color: inherit;">Price</a>
+                            </th>
+                            <th class="px-5 py-4 text-left text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
+                                <a href="?sort=top_prize&min_price={{ min_price }}&max_price={{ max_price }}&state={{ state }}" class="hover:text-[--pop-purple] no-underline" style="color: inherit;">Top Prize</a>
+                            </th>
+                            <th class="px-5 py-4 text-left text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
+                                <a href="?sort=remaining&min_price={{ min_price }}&max_price={{ max_price }}&state={{ state }}" class="hover:text-[--pop-purple] no-underline" style="color: inherit;">Prizes Left</a>
+                            </th>
+                            <th class="px-5 py-4 text-left text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
+                                <a href="?sort=odds&min_price={{ min_price }}&max_price={{ max_price }}&state={{ state }}" class="hover:text-[--pop-purple] no-underline" style="color: inherit;">Win Rate</a>
+                            </th>
+                            <th class="px-5 py-4 text-left text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">Odds</th>
+                            <th class="px-5 py-4 text-left text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
+                                <a href="?sort=ratio&min_price={{ min_price }}&max_price={{ max_price }}&state={{ state }}" class="hover:text-[--pop-purple] no-underline" style="color: inherit;">Ratio</a>
+                            </th>
+                            <th class="px-5 py-4 text-left text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
+                                <a href="?sort=score&min_price={{ min_price }}&max_price={{ max_price }}&state={{ state }}" class="hover:text-[--pop-purple] no-underline" style="color: inherit;">Score</a>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for game in games %}
+                        <tr class="game-row border-b border-gray-50 {% if loop.index is odd %}bg-white{% else %}bg-orange-50/30{% endif %}">
+                            <!-- Rank -->
+                            <td class="px-5 py-3.5">
+                                {% if loop.index == 1 %}
+                                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-black text-white" style="background: var(--pop-yellow); color: #92400E;">1</span>
+                                {% elif loop.index == 2 %}
+                                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-black text-white" style="background: #C0C0C0; color: #374151;">2</span>
+                                {% elif loop.index == 3 %}
+                                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-black text-white" style="background: #CD7F32; color: white;">3</span>
+                                {% else %}
+                                    <span class="text-sm font-bold text-gray-400 pl-2">{{ loop.index }}</span>
+                                {% endif %}
+                            </td>
+                            <!-- Game Name -->
+                            <td class="px-5 py-3.5">
+                                <div class="font-extrabold" style="color: #1a1a2e;">{{ game.name }}</div>
+                                <div class="text-xs font-bold text-gray-400">#{{ game.game_num }}</div>
+                            </td>
+                            <!-- Price -->
+                            <td class="px-5 py-3.5">
+                                {% set p = game.price|int %}
+                                <span class="inline-block px-3 py-1 rounded-full text-xs font-black price-{{ p }}">
+                                    ${{ "{:,.0f}".format(game.price) }}
+                                </span>
+                            </td>
+                            <!-- Top Prize -->
+                            <td class="px-5 py-3.5 font-extrabold" style="color: var(--pop-coral);">
+                                ${{ "{:,.0f}".format(game.top_prize) }}
+                            </td>
+                            <!-- Prizes Remaining -->
+                            <td class="px-5 py-3.5">
+                                <span class="inline-block px-3 py-1 rounded-full text-xs font-black {% if game.top_prizes_remaining >= 5 %}remaining-high{% elif game.top_prizes_remaining >= 2 %}remaining-mid{% else %}remaining-low{% endif %}">
+                                    {{ game.top_prizes_remaining }}
+                                </span>
+                            </td>
+                            <!-- Win Rate -->
+                            <td class="px-5 py-3.5 font-extrabold" style="color: var(--pop-green);">
+                                {{ game.win_rate_pct }}%
+                            </td>
+                            <!-- Odds -->
+                            <td class="px-5 py-3.5 text-gray-500 font-bold">
+                                1 in {{ game.odds_1_in }}
+                            </td>
+                            <!-- Ratio -->
+                            <td class="px-5 py-3.5 font-bold" style="color: var(--pop-purple);">
+                                {{ "{:,.0f}".format(game.top_prize_to_price_ratio) }}x
+                            </td>
+                            <!-- Score -->
+                            <td class="px-5 py-3.5">
+                                {% set max_score = games[0].score if games else 1 %}
+                                {% set pct = (game.score / max_score * 100) if max_score > 0 else 0 %}
+                                <span class="inline-block px-3 py-1 rounded-full text-xs font-black {% if pct >= 75 %}score-great{% elif pct >= 50 %}score-good{% elif pct >= 25 %}score-ok{% else %}score-low{% endif %}">
+                                    {{ game.score }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- How It Works -->
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 mt-8">
+            <h3 class="text-lg font-black mb-4" style="color: #1a1a2e;">How the Score Works</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div class="flex gap-3">
+                    <span class="flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center text-lg" style="background: #D1FAE5;">%</span>
+                    <div>
+                        <div class="font-extrabold" style="color: #1a1a2e;">Win Rate</div>
+                        <div class="text-gray-500 font-semibold">Your chance of winning any prize on a single ticket.</div>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <span class="flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center text-lg" style="background: #FEF3C7;">N</span>
+                    <div>
+                        <div class="font-extrabold" style="color: #1a1a2e;">Top Prizes Left</div>
+                        <div class="text-gray-500 font-semibold"><span class="font-bold" style="color: #166534;">Green 5+</span> &middot; <span class="font-bold" style="color: #854D0E;">Yellow 2-4</span> &middot; <span class="font-bold" style="color: #991B1B;">Red 1</span></div>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <span class="flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center text-lg" style="background: #EDE9FE;">x</span>
+                    <div>
+                        <div class="font-extrabold" style="color: #1a1a2e;">Prize/Price Ratio</div>
+                        <div class="text-gray-500 font-semibold">Top prize divided by ticket cost. Higher = more upside per dollar.</div>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <span class="flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center text-lg" style="background: #FCE7F3;">S</span>
+                    <div>
+                        <div class="font-extrabold" style="color: #1a1a2e;">Score</div>
+                        <div class="text-gray-500 font-semibold">Composite: 60% win probability + 30% prizes remaining + 10% ratio.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-5 p-4 rounded-2xl text-sm font-bold" style="background: #FFF7ED; color: #9A3412;">
+                Strategy tip: Focus on games where top prizes are still available AND the win rate is above average for that price point.
+                Avoid games where top prizes = 1 — the remaining ticket pool is likely unfavorable.
+            </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="rounded-2xl p-4 mt-6 mb-8 text-xs font-bold text-center" style="background: #FEF2F2; color: #991B1B;">
+            This tool is for informational purposes only. All lottery games have negative expected value.
+            Play responsibly. Problem gambling? Call {{ state_cfg.helpline }}.
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toastContainer">
+        <div class="toast" id="refreshToast">
+            <div class="toast-icon">{{ state_cfg.mascot_emoji|safe }}</div>
+            <div>
+                <div class="toast-text" id="toastTitle">{{ state_cfg.mascot_name.split(' ')[0] }} refreshed the data!</div>
+                <div class="toast-sub" id="toastSub">Picks and rankings updated just now.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchState(code) {
+            const url = new URL(window.location);
+            url.searchParams.set('state', code);
+            // Remove filter/sort params when switching states
+            url.searchParams.delete('min_price');
+            url.searchParams.delete('max_price');
+            url.searchParams.delete('sort');
+            window.location.href = url.toString();
+        }
+
+        // Check if data is stale (more than 12 hours old)
+        (function() {
+            const timeStr = '{{ analyzed_at }}';
+            if (!timeStr || timeStr === 'unknown') return;
+            const updated = new Date(timeStr);
+            const now = new Date();
+            const hoursDiff = (now - updated) / (1000 * 60 * 60);
+            const badge = document.getElementById('liveBadge');
+            const timeEl = document.getElementById('liveTime');
+
+            // Make the time human-readable
+            const mins = Math.floor((now - updated) / (1000 * 60));
+            if (mins < 2) {
+                timeEl.textContent = 'Just now';
+            } else if (mins < 60) {
+                timeEl.textContent = mins + ' minutes ago';
+            } else if (hoursDiff < 24) {
+                timeEl.textContent = Math.floor(hoursDiff) + ' hours ago';
+            } else {
+                timeEl.textContent = Math.floor(hoursDiff / 24) + ' days ago';
+            }
+
+            if (hoursDiff > 12) {
+                badge.classList.add('stale-badge');
+                document.getElementById('liveBadgeText').innerHTML =
+                    '<span class="live-dot"></span> Stale — ' + timeEl.textContent + '. Hit refresh!';
+            }
+        })();
+
+        function showToast(title, sub) {
+            const toast = document.getElementById('refreshToast');
+            document.getElementById('toastTitle').textContent = title;
+            document.getElementById('toastSub').textContent = sub;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 4000);
+        }
+
+        function refreshData() {
+            const btn = document.getElementById('refreshBtn');
+            const badge = document.getElementById('liveBadge');
+            btn.innerHTML = '<span class="spinner"></span> Pulling fresh data...';
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
+
+            // Update badge to show loading
+            badge.innerHTML = '<span class="spinner spinner-dark" style="width:12px;height:12px;border-width:2px;margin-right:6px;"></span> Scraping {{ state_cfg.name }} Lottery...';
+
+            fetch('/api/refresh?state={{ state }}', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        // Show toast first, then reload
+                        showToast(
+                            '{{ state_cfg.mascot_name.split(" ")[0] }} refreshed the data!',
+                            data.games_count + ' games re-analyzed. Reloading picks...'
+                        );
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        alert('Refresh failed: ' + (data.error || 'Unknown error'));
+                        btn.textContent = 'Refresh Today\'s Data';
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                    }
+                })
+                .catch(err => {
+                    alert('Refresh failed: ' + err);
+                    btn.textContent = 'Refresh Today\'s Data';
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                });
+        }
+    </script>
+</body>
+</html>
