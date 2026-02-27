@@ -11,7 +11,8 @@ import requests as http_requests
 from flask import Flask, render_template, jsonify, request, make_response
 
 from scraper import (
-    run_full_scrape, scrape_summary, analyze_games,
+    run_full_scrape, scrape_summary, scrape_prize_tiers, analyze_games,
+    compute_velocity, save_snapshot,
     DATA_DIR, STATE_CONFIG, DEFAULT_STATE, get_data_paths,
 )
 
@@ -87,6 +88,8 @@ def index():
         "top_prize": lambda g: g["top_prize"],
         "remaining": lambda g: g["top_prizes_remaining"],
         "ratio": lambda g: g["top_prize_to_price_ratio"],
+        "ev": lambda g: g.get("ev_per_dollar") or 0,
+        "payout": lambda g: g.get("payout_pct") or 0,
     }
     sort_fn = sort_keys.get(sort_by, sort_keys["score"])
     filtered.sort(key=sort_fn, reverse=True)
@@ -130,8 +133,10 @@ def plan():
     if not data:
         return render_with_state("loading.html", state)
     games = data["games"]
-    smart_picks = sorted(games, key=lambda g: g.get("safety_score", 0), reverse=True)[:3]
-    return render_with_state("plan.html", state, smart_picks=smart_picks, analyzed_at=data.get("analyzed_at", "unknown"))
+    by_safety = sorted(games, key=lambda g: g.get("safety_score", 0), reverse=True)
+    smart_picks = by_safety[:3]
+    backup_picks = by_safety[3:5]
+    return render_with_state("plan.html", state, smart_picks=smart_picks, backup_picks=backup_picks, analyzed_at=data.get("analyzed_at", "unknown"))
 
 
 @app.route("/tracker")
@@ -140,10 +145,16 @@ def tracker():
     state = get_current_state()
     data = get_analyzed_data(state)
     game_names = []
+    game_odds = {}
     if data:
         game_names = [{"name": g["name"], "price": g["price"], "game_num": g["game_num"]} for g in data["games"]]
         game_names.sort(key=lambda g: g["name"])
-    return render_with_state("tracker.html", state, game_names=game_names)
+        for g in data["games"]:
+            game_odds[g["name"]] = {
+                "win_rate_pct": g.get("win_rate_pct", 0),
+                "odds_1_in": g.get("odds_1_in", 0),
+            }
+    return render_with_state("tracker.html", state, game_names=game_names, game_odds=game_odds)
 
 
 @app.route("/go")
@@ -216,7 +227,16 @@ def api_refresh():
     try:
         _ensure_data_dir()
         summary = scrape_summary(state)
-        analyzed = analyze_games(summary)
+        # Try to get tier data for EV calculations
+        tier_data = None
+        try:
+            game_nums = [g["game_num"] for g in summary]
+            tier_data = scrape_prize_tiers(state, game_nums)
+        except Exception:
+            pass
+        analyzed = analyze_games(summary, tier_data=tier_data)
+        compute_velocity(state, analyzed)
+        save_snapshot(state, analyzed)
         result = {
             "analyzed_at": datetime.now(timezone.utc).isoformat(),
             "games": analyzed,

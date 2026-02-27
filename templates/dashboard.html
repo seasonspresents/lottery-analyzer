@@ -349,6 +349,27 @@
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
 
+        <!-- Positive EV Alert Banner -->
+        {% set positive_ev_games = all_games|selectattr("positive_ev")|list %}
+        {% if positive_ev_games %}
+        <div class="rounded-2xl p-4 sm:p-5 mb-6 shadow-sm" style="background: linear-gradient(135deg, #FDE68A 0%, #FCD34D 50%, #FBBF24 100%); border: 2px solid #F59E0B;">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="text-xl">&#9888;&#65039;</span>
+                <span class="text-sm font-black uppercase tracking-wider" style="color: #92400E;">Positive EV Alert</span>
+            </div>
+            <div class="text-xs sm:text-sm font-bold" style="color: #78350F;">
+                {% for peg in positive_ev_games[:5] %}
+                <span class="inline-block px-3 py-1 rounded-lg mr-2 mb-1" style="background: rgba(255,255,255,0.6);">
+                    <strong>{{ peg.name }}</strong> — EV ${{ "%.2f"|format(peg.ev_per_ticket) }}/ticket ({{ peg.payout_pct }}% return)
+                </span>
+                {% endfor %}
+            </div>
+            <div class="text-[10px] font-bold mt-2" style="color: #92400E;">
+                These games currently return more than their ticket price based on remaining prize pool. Rare and worth attention.
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Smart Pick Section with Mascot -->
         <div class="smart-pick-section">
             <!-- Mascot intro -->
@@ -391,7 +412,7 @@
                     <div class="text-xs font-bold text-gray-400 mb-3">#{{ pick.game_num }}</div>
 
                     <!-- Stats row -->
-                    <div class="grid grid-cols-3 gap-3 text-center">
+                    <div class="grid grid-cols-4 gap-2 text-center">
                         <div>
                             <div class="text-xs font-bold text-gray-400">Win Rate</div>
                             <div class="text-lg font-black" style="color: var(--pop-green);">{{ pick.win_rate_pct }}%</div>
@@ -399,6 +420,15 @@
                         <div>
                             <div class="text-xs font-bold text-gray-400">Prizes Left</div>
                             <div class="text-lg font-black" style="color: var(--pop-purple);">{{ pick.top_prizes_remaining }}</div>
+                            {% if pick.top_prize_velocity is defined and pick.top_prize_velocity > 0 %}
+                            <div class="text-[10px] font-black" style="color: var(--pop-coral);">-{{ pick.top_prize_velocity }} since last</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-gray-400">EV/$</div>
+                            <div class="text-lg font-black" style="color: {% if pick.ev_per_dollar is not none and pick.ev_per_dollar >= 1.0 %}var(--pop-green){% elif pick.ev_per_dollar is not none and pick.ev_per_dollar >= 0.6 %}var(--pop-blue){% else %}#9ca3af{% endif %};">
+                                {% if pick.ev_per_dollar is not none %}{{ "%.2f"|format(pick.ev_per_dollar) }}{% else %}--{% endif %}
+                            </div>
                         </div>
                         <div>
                             <div class="text-xs font-bold text-gray-400">Top Prize</div>
@@ -572,6 +602,8 @@
                 <select name="sort" class="select select-bordered select-sm rounded-xl font-bold text-sm" style="min-height:40px;">
                     <option value="score" {% if sort_by == 'score' %}selected{% endif %}>Best Overall</option>
                     <option value="odds" {% if sort_by == 'odds' %}selected{% endif %}>Win Rate</option>
+                    <option value="ev" {% if sort_by == 'ev' %}selected{% endif %}>EV per Dollar</option>
+                    <option value="payout" {% if sort_by == 'payout' %}selected{% endif %}>Payout %</option>
                     <option value="top_prize" {% if sort_by == 'top_prize' %}selected{% endif %}>Top Prize</option>
                     <option value="remaining" {% if sort_by == 'remaining' %}selected{% endif %}>Prizes Left</option>
                     <option value="ratio" {% if sort_by == 'ratio' %}selected{% endif %}>Prize/Price Ratio</option>
@@ -611,6 +643,12 @@
                             </th>
                             <th class="px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
                                 <a href="?sort=odds&min_price={{ min_price }}&max_price={{ max_price }}&state={{ state }}" class="hover:text-[--pop-purple] no-underline" style="color: inherit;">Win%</a>
+                            </th>
+                            <th class="px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
+                                <a href="?sort=ev&min_price={{ min_price }}&max_price={{ max_price }}&state={{ state }}" class="hover:text-[--pop-purple] no-underline" style="color: inherit;">EV/$</a>
+                            </th>
+                            <th class="px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
+                                <a href="?sort=payout&min_price={{ min_price }}&max_price={{ max_price }}&state={{ state }}" class="hover:text-[--pop-purple] no-underline" style="color: inherit;">Return</a>
                             </th>
                             <th class="px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">Odds</th>
                             <th class="px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
@@ -657,10 +695,21 @@
                                 <span class="inline-block px-3 py-1 rounded-full text-xs font-black {% if game.top_prizes_remaining >= 5 %}remaining-high{% elif game.top_prizes_remaining >= 2 %}remaining-mid{% else %}remaining-low{% endif %}">
                                     {{ game.top_prizes_remaining }}
                                 </span>
+                                {% if game.top_prize_velocity is defined and game.top_prize_velocity > 0 %}
+                                <span class="inline-block ml-1 px-1.5 py-0.5 rounded text-[10px] font-black" style="background: #FEE2E2; color: #991B1B;">-{{ game.top_prize_velocity }}</span>
+                                {% endif %}
                             </td>
                             <!-- Win Rate -->
                             <td class="px-3 sm:px-5 py-2.5 sm:py-3.5 font-extrabold" style="color: var(--pop-green);">
                                 {{ game.win_rate_pct }}%
+                            </td>
+                            <!-- EV/$ -->
+                            <td class="px-3 sm:px-5 py-2.5 sm:py-3.5 font-extrabold" style="color: {% if game.ev_per_dollar is not none and game.ev_per_dollar >= 1.0 %}var(--pop-green){% elif game.ev_per_dollar is not none and game.ev_per_dollar >= 0.6 %}var(--pop-blue){% else %}#9ca3af{% endif %};">
+                                {% if game.ev_per_dollar is not none %}{{ "%.2f"|format(game.ev_per_dollar) }}{% else %}--{% endif %}
+                            </td>
+                            <!-- Return -->
+                            <td class="px-3 sm:px-5 py-2.5 sm:py-3.5 font-bold" style="color: {% if game.payout_pct is not none and game.payout_pct >= 80 %}var(--pop-green){% elif game.payout_pct is not none and game.payout_pct >= 60 %}var(--pop-blue){% else %}#9ca3af{% endif %};">
+                                {% if game.payout_pct is not none %}{{ game.payout_pct }}%{% else %}--{% endif %}
                             </td>
                             <!-- Odds -->
                             <td class="px-3 sm:px-5 py-2.5 sm:py-3.5 text-gray-500 font-bold">
@@ -711,10 +760,17 @@
                     </div>
                 </div>
                 <div class="flex gap-3">
+                    <span class="flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center text-lg" style="background: #DBEAFE;">$</span>
+                    <div>
+                        <div class="font-extrabold" style="color: #1a1a2e;">EV/$ &amp; Return</div>
+                        <div class="text-gray-500 font-semibold">Expected value per dollar spent and payout %, calculated from full prize tier data.</div>
+                    </div>
+                </div>
+                <div class="flex gap-3">
                     <span class="flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center text-lg" style="background: #FCE7F3;">S</span>
                     <div>
                         <div class="font-extrabold" style="color: #1a1a2e;">Score</div>
-                        <div class="text-gray-500 font-semibold">Composite: 60% win probability + 30% prizes remaining + 10% ratio.</div>
+                        <div class="text-gray-500 font-semibold">Composite: 45% win probability + 45% prizes remaining + 10% ratio + EV bonus.</div>
                     </div>
                 </div>
             </div>

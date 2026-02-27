@@ -181,6 +181,18 @@
             </div>
         </div>
 
+        <!-- Your Win Rate vs Expected -->
+        <div id="winRateSection" class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-6 sm:mb-8" style="display:none;">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="text-2xl">{{ state_cfg.mascot_emoji|safe }}</span>
+                <h2 class="text-lg font-black" style="color: #1a1a2e;">Your Win Rate vs Expected</h2>
+            </div>
+            <div class="text-xs font-bold text-gray-500 mb-4">
+                Compares your actual win rate to the theoretical odds. Requires 3+ sessions for a game to show.
+            </div>
+            <div id="winRateBody" class="space-y-3"></div>
+        </div>
+
         <!-- Reinvestment Calculator -->
         <div class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 p-4 sm:p-6 mt-6 sm:mt-8">
             <div class="flex items-center gap-2 mb-4">
@@ -213,6 +225,7 @@
     <script>
         const CURRENT_STATE = '{{ state }}';
         const STORAGE_KEY = CURRENT_STATE + '_sessions';
+        const GAME_ODDS = {{ game_odds|tojson }};
 
         function switchState(code) {
             window.location.href = '/tracker?state=' + code;
@@ -316,6 +329,58 @@
                 }
             } else {
                 adviceEl.style.display = 'none';
+            }
+
+            // Win Rate vs Expected
+            const winRateSection = document.getElementById('winRateSection');
+            const winRateBody = document.getElementById('winRateBody');
+            const gameAgg = {};
+            sessions.forEach(s => {
+                if (!gameAgg[s.game]) gameAgg[s.game] = { total: 0, wins: 0 };
+                gameAgg[s.game].total++;
+                if (s.won > 0) gameAgg[s.game].wins++;
+            });
+            let winRateHtml = '';
+            let hasWinRate = false;
+            Object.keys(gameAgg).sort().forEach(gameName => {
+                const agg = gameAgg[gameName];
+                if (agg.total < 3) return;
+                const odds = GAME_ODDS[gameName];
+                if (!odds || !odds.win_rate_pct) return;
+                hasWinRate = true;
+                const personalPct = ((agg.wins / agg.total) * 100).toFixed(1);
+                const expectedPct = odds.win_rate_pct.toFixed(1);
+                const delta = (personalPct - expectedPct).toFixed(1);
+                const deltaColor = delta >= 0 ? 'var(--pop-green)' : 'var(--pop-coral)';
+                const deltaSign = delta >= 0 ? '+' : '';
+                winRateHtml += `
+                    <div class="flex items-center justify-between p-3 rounded-xl" style="background: #FFF7ED;">
+                        <div>
+                            <div class="text-sm font-black" style="color: #1a1a2e;">${gameName}</div>
+                            <div class="text-[10px] font-bold text-gray-400">${agg.total} sessions</div>
+                        </div>
+                        <div class="flex items-center gap-4 text-sm">
+                            <div class="text-center">
+                                <div class="text-[10px] font-bold text-gray-400">You</div>
+                                <div class="font-black" style="color: var(--pop-purple);">${personalPct}%</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-[10px] font-bold text-gray-400">Expected</div>
+                                <div class="font-black" style="color: var(--pop-blue);">${expectedPct}%</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-[10px] font-bold text-gray-400">Delta</div>
+                                <div class="font-black" style="color: ${deltaColor};">${deltaSign}${delta}%</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            if (hasWinRate) {
+                winRateSection.style.display = 'block';
+                winRateBody.innerHTML = winRateHtml;
+            } else {
+                winRateSection.style.display = 'none';
             }
 
             // Table rows
