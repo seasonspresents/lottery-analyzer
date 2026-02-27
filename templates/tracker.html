@@ -43,54 +43,54 @@
 
     <!-- Header -->
     <div class="bg-white border-b-4 border-[--pop-orange] shadow-sm">
-        <div class="max-w-5xl mx-auto px-6 py-5 flex flex-wrap items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
+            <div class="flex items-center justify-between gap-3 mb-3 sm:mb-0">
                 <div>
-                    <h1 class="text-3xl font-black tracking-tight" style="color: #1a1a2e;">
+                    <h1 class="text-xl sm:text-3xl font-black tracking-tight" style="color: #1a1a2e;">
                         <span style="color: var(--pop-orange);">Session</span> Tracker
                     </h1>
-                    <p class="text-sm font-semibold mt-1" style="color: #9ca3af;">
+                    <p class="text-xs sm:text-sm font-semibold mt-0.5" style="color: #9ca3af;">
                         Track every ticket. Know your real numbers.
                     </p>
                 </div>
-                <select class="state-picker" onchange="switchState(this.value)">
+                <select class="state-picker" style="min-height:44px;" onchange="switchState(this.value)">
                     {% for code, cfg in states|dictsort %}
                     <option value="{{ code }}" {% if code == state %}selected{% endif %}>{{ cfg.abbreviation }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <div class="flex gap-2">
-                <a href="/?state={{ state }}" class="font-extrabold text-xs px-4 py-2 rounded-xl border-2 no-underline"
+            <div class="flex gap-2 flex-wrap">
+                <a href="/?state={{ state }}" class="font-extrabold text-xs px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border-2 no-underline"
                    style="border-color: var(--pop-green); color: var(--pop-green);">Dashboard</a>
-                <a href="/plan?state={{ state }}" class="font-extrabold text-xs px-4 py-2 rounded-xl border-2 no-underline"
+                <a href="/plan?state={{ state }}" class="font-extrabold text-xs px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border-2 no-underline"
                    style="border-color: var(--pop-purple); color: var(--pop-purple);">Game Plan</a>
-                <a href="/stores?state={{ state }}" class="font-extrabold text-xs px-4 py-2 rounded-xl border-2 no-underline"
+                <a href="/stores?state={{ state }}" class="font-extrabold text-xs px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border-2 no-underline"
                    style="border-color: var(--pop-blue); color: var(--pop-blue);">Stores</a>
-                <a href="/go" class="font-extrabold text-xs px-4 py-2 rounded-xl border-2 no-underline"
+                <a href="/go" class="font-extrabold text-xs px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border-2 no-underline"
                    style="border-color: var(--pop-coral); color: var(--pop-coral);">ScratcherIQ</a>
             </div>
         </div>
     </div>
 
-    <div class="max-w-5xl mx-auto px-6 py-8">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
 
         <!-- Lifetime Stats -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <div class="stat-card bg-white rounded-2xl p-5 shadow-sm text-center">
-                <div class="text-xs font-bold text-gray-400">Total Spent</div>
-                <div class="text-2xl font-black" id="statSpent" style="color: var(--pop-coral);">$0</div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <div class="stat-card bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-sm text-center">
+                <div class="text-[10px] sm:text-xs font-bold text-gray-400">Total Spent</div>
+                <div class="text-lg sm:text-2xl font-black" id="statSpent" style="color: var(--pop-coral);">$0</div>
             </div>
-            <div class="stat-card bg-white rounded-2xl p-5 shadow-sm text-center">
-                <div class="text-xs font-bold text-gray-400">Total Won</div>
-                <div class="text-2xl font-black" id="statWon" style="color: var(--pop-green);">$0</div>
+            <div class="stat-card bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-sm text-center">
+                <div class="text-[10px] sm:text-xs font-bold text-gray-400">Total Won</div>
+                <div class="text-lg sm:text-2xl font-black" id="statWon" style="color: var(--pop-green);">$0</div>
             </div>
-            <div class="stat-card bg-white rounded-2xl p-5 shadow-sm text-center">
-                <div class="text-xs font-bold text-gray-400">Net P&L</div>
-                <div class="text-2xl font-black" id="statNet" style="color: #1a1a2e;">$0</div>
+            <div class="stat-card bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-sm text-center">
+                <div class="text-[10px] sm:text-xs font-bold text-gray-400">Net P&L</div>
+                <div class="text-lg sm:text-2xl font-black" id="statNet" style="color: #1a1a2e;">$0</div>
             </div>
-            <div class="stat-card bg-white rounded-2xl p-5 shadow-sm text-center">
-                <div class="text-xs font-bold text-gray-400">Sessions</div>
-                <div class="text-2xl font-black" id="statSessions" style="color: var(--pop-purple);">0</div>
+            <div class="stat-card bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-sm text-center">
+                <div class="text-[10px] sm:text-xs font-bold text-gray-400">Sessions</div>
+                <div class="text-lg sm:text-2xl font-black" id="statSessions" style="color: var(--pop-purple);">0</div>
             </div>
         </div>
 
@@ -104,8 +104,8 @@
         </div>
 
         <!-- Log New Session -->
-        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 mb-8">
-            <h2 class="text-lg font-black mb-4" style="color: #1a1a2e;">Log a Session</h2>
+        <div class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-6 sm:mb-8">
+            <h2 class="text-base sm:text-lg font-black mb-3 sm:mb-4" style="color: #1a1a2e;">Log a Session</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="text-xs font-black uppercase tracking-wider mb-1 block text-gray-400">Game</label>
@@ -140,9 +140,9 @@
                     </select>
                 </div>
             </div>
-            <div class="mt-4 flex gap-3">
-                <button onclick="logSession()" class="font-extrabold text-white px-8 py-3 rounded-xl cursor-pointer border-0 active:scale-95"
-                    style="background: var(--pop-green); box-shadow: 0 3px 10px rgba(88,204,2,0.3);">
+            <div class="mt-4">
+                <button onclick="logSession()" class="w-full sm:w-auto font-extrabold text-white px-8 py-3 rounded-xl cursor-pointer border-0 active:scale-95"
+                    style="background: var(--pop-green); box-shadow: 0 3px 10px rgba(88,204,2,0.3); min-height: 48px;">
                     Log Session
                 </button>
             </div>
@@ -156,23 +156,24 @@
                 Clear All
             </button>
         </div>
-        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-            <div id="historyEmpty" class="p-12 text-center" style="display:none;">
-                <div class="text-4xl mb-3">{{ state_cfg.mascot_emoji|safe }}</div>
-                <div class="text-sm font-bold text-gray-400">No sessions logged yet. Go play and come back to track it!</div>
+        <div class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div id="historyEmpty" class="p-8 sm:p-12 text-center" style="display:none;">
+                <div class="text-3xl sm:text-4xl mb-3">{{ state_cfg.mascot_emoji|safe }}</div>
+                <div class="text-xs sm:text-sm font-bold text-gray-400">No sessions logged yet. Go play and come back to track it!</div>
             </div>
+            <p class="text-[10px] font-bold text-gray-400 px-4 py-2 sm:hidden" id="swipeHint" style="display:none;">Swipe to see all columns &rarr;</p>
             <div class="overflow-x-auto">
-                <table class="w-full text-sm" id="historyTable" style="display:none;">
+                <table class="w-full text-xs sm:text-sm" id="historyTable" style="display:none;">
                     <thead>
                         <tr class="border-b-2 border-gray-100">
-                            <th class="px-4 py-3 text-left text-[10px] font-black uppercase text-gray-400">Date</th>
-                            <th class="px-4 py-3 text-left text-[10px] font-black uppercase text-gray-400">Game</th>
-                            <th class="px-4 py-3 text-right text-[10px] font-black uppercase text-gray-400">Tickets</th>
-                            <th class="px-4 py-3 text-right text-[10px] font-black uppercase text-gray-400">Spent</th>
-                            <th class="px-4 py-3 text-right text-[10px] font-black uppercase text-gray-400">Won</th>
-                            <th class="px-4 py-3 text-right text-[10px] font-black uppercase text-gray-400">Net</th>
-                            <th class="px-4 py-3 text-center text-[10px] font-black uppercase text-gray-400">2nd Chance</th>
-                            <th class="px-4 py-3 text-center text-[10px] font-black uppercase text-gray-400"></th>
+                            <th class="px-2 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] font-black uppercase text-gray-400">Date</th>
+                            <th class="px-2 sm:px-4 py-2.5 sm:py-3 text-left text-[10px] font-black uppercase text-gray-400">Game</th>
+                            <th class="px-2 sm:px-4 py-2.5 sm:py-3 text-right text-[10px] font-black uppercase text-gray-400">Qty</th>
+                            <th class="px-2 sm:px-4 py-2.5 sm:py-3 text-right text-[10px] font-black uppercase text-gray-400">Spent</th>
+                            <th class="px-2 sm:px-4 py-2.5 sm:py-3 text-right text-[10px] font-black uppercase text-gray-400">Won</th>
+                            <th class="px-2 sm:px-4 py-2.5 sm:py-3 text-right text-[10px] font-black uppercase text-gray-400">Net</th>
+                            <th class="px-2 sm:px-4 py-2.5 sm:py-3 text-center text-[10px] font-black uppercase text-gray-400">2nd</th>
+                            <th class="px-2 sm:px-4 py-2.5 sm:py-3 text-center text-[10px] font-black uppercase text-gray-400"></th>
                         </tr>
                     </thead>
                     <tbody id="historyBody"></tbody>
@@ -181,7 +182,7 @@
         </div>
 
         <!-- Reinvestment Calculator -->
-        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 mt-8">
+        <div class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 p-4 sm:p-6 mt-6 sm:mt-8">
             <div class="flex items-center gap-2 mb-4">
                 <span class="text-2xl">{{ state_cfg.mascot_emoji|safe }}</span>
                 <h2 class="text-lg font-black" style="color: #1a1a2e;">Reinvestment Calculator</h2>
@@ -198,8 +199,8 @@
                     <label class="text-xs font-black uppercase tracking-wider mb-1 block text-gray-400">Ticket Price ($)</label>
                     <input type="number" id="reinvestPrice" min="1" value="10" class="input input-bordered w-full rounded-xl font-bold">
                 </div>
-                <button onclick="calcReinvest()" class="font-extrabold text-white px-6 py-3 rounded-xl cursor-pointer border-0"
-                    style="background: var(--pop-purple);">
+                <button onclick="calcReinvest()" class="w-full sm:w-auto font-extrabold text-white px-6 py-3 rounded-xl cursor-pointer border-0"
+                    style="background: var(--pop-purple); min-height: 48px;">
                     Calculate
                 </button>
             </div>
@@ -275,12 +276,15 @@
             const table = document.getElementById('historyTable');
             const empty = document.getElementById('historyEmpty');
 
+            const swipeHint = document.getElementById('swipeHint');
             if (sessions.length === 0) {
                 table.style.display = 'none';
                 empty.style.display = 'block';
+                if (swipeHint) swipeHint.style.display = 'none';
             } else {
                 table.style.display = 'table';
                 empty.style.display = 'none';
+                if (swipeHint) swipeHint.style.display = '';
             }
 
             // Stats
@@ -322,17 +326,17 @@
                 const netColor = s.net >= 0 ? 'var(--pop-green)' : 'var(--pop-coral)';
                 const netSign = s.net >= 0 ? '+' : '-';
                 tr.innerHTML = `
-                    <td class="px-4 py-3 font-bold text-gray-500">${s.date}</td>
-                    <td class="px-4 py-3 font-extrabold" style="color:#1a1a2e;">${s.game}</td>
-                    <td class="px-4 py-3 text-right font-bold" style="color:var(--pop-purple);">${s.tickets}</td>
-                    <td class="px-4 py-3 text-right font-bold" style="color:var(--pop-coral);">$${s.spent}</td>
-                    <td class="px-4 py-3 text-right font-bold" style="color:var(--pop-green);">$${s.won}</td>
-                    <td class="px-4 py-3 text-right font-black" style="color:${netColor};">${netSign}$${Math.abs(s.net)}</td>
-                    <td class="px-4 py-3 text-center">${s.secondChance === 'yes'
-                        ? '<span class="text-[10px] font-black px-2 py-0.5 rounded-md" style="background:#D1FAE5;color:#065F46;">YES</span>'
-                        : '<span class="text-[10px] font-black px-2 py-0.5 rounded-md" style="background:#FEE2E2;color:#991B1B;">NO</span>'}</td>
-                    <td class="px-4 py-3 text-center">
-                        <button onclick="deleteSession(${s.id})" class="text-[10px] font-bold text-gray-300 cursor-pointer border-0 bg-transparent hover:text-red-400">X</button>
+                    <td class="px-2 sm:px-4 py-2.5 sm:py-3 font-bold text-gray-500 whitespace-nowrap">${s.date}</td>
+                    <td class="px-2 sm:px-4 py-2.5 sm:py-3 font-extrabold" style="color:#1a1a2e;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${s.game}</td>
+                    <td class="px-2 sm:px-4 py-2.5 sm:py-3 text-right font-bold" style="color:var(--pop-purple);">${s.tickets}</td>
+                    <td class="px-2 sm:px-4 py-2.5 sm:py-3 text-right font-bold whitespace-nowrap" style="color:var(--pop-coral);">$${s.spent}</td>
+                    <td class="px-2 sm:px-4 py-2.5 sm:py-3 text-right font-bold whitespace-nowrap" style="color:var(--pop-green);">$${s.won}</td>
+                    <td class="px-2 sm:px-4 py-2.5 sm:py-3 text-right font-black whitespace-nowrap" style="color:${netColor};">${netSign}$${Math.abs(s.net)}</td>
+                    <td class="px-2 sm:px-4 py-2.5 sm:py-3 text-center">${s.secondChance === 'yes'
+                        ? '<span class="text-[10px] font-black px-1.5 py-0.5 rounded-md" style="background:#D1FAE5;color:#065F46;">Y</span>'
+                        : '<span class="text-[10px] font-black px-1.5 py-0.5 rounded-md" style="background:#FEE2E2;color:#991B1B;">N</span>'}</td>
+                    <td class="px-2 sm:px-4 py-2.5 sm:py-3 text-center">
+                        <button onclick="deleteSession(${s.id})" class="text-xs font-bold text-gray-300 cursor-pointer border-0 bg-transparent hover:text-red-400 p-1" style="min-width:32px;min-height:32px;">X</button>
                     </td>
                 `;
                 tbody.appendChild(tr);

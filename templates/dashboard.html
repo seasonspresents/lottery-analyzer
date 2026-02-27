@@ -282,63 +282,72 @@
             padding-right: 30px;
         }
         .state-picker:focus { border-color: var(--pop-purple); outline: none; }
+
+        /* ---- Mobile overrides ---- */
+        @media (max-width: 639px) {
+            .smart-pick-section { padding: 16px; margin-bottom: 20px; border-radius: 20px; }
+            .mascot-wrap { flex-direction: column; align-items: center; text-align: center; gap: 12px; }
+            .mascot { width: 56px; height: 56px; font-size: 28px; }
+            .mascot-bubble::before { display: none; }
+            .mascot-bubble { border-radius: 16px; padding: 14px 16px; }
+            .mascot-name { font-size: 14px; }
+            .mascot-msg { font-size: 13px; }
+            .smart-card { padding: 16px; border-radius: 16px; }
+            .smart-explanation { font-size: 12px; }
+            .toast-container { top: auto; bottom: 16px; right: 16px; left: 16px; }
+            .toast { border-radius: 14px; padding: 12px 16px; }
+        }
     </style>
 </head>
 <body class="min-h-screen">
 
     <!-- Header -->
     <div class="bg-white border-b-4 border-[--pop-green] shadow-sm">
-        <div class="max-w-7xl mx-auto px-6 py-5 flex flex-wrap items-center justify-between gap-4">
-            <div class="flex items-center gap-4">
-                <div>
-                    <h1 class="text-3xl font-black tracking-tight" style="color: #1a1a2e;">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
+            <!-- Title row -->
+            <div class="flex items-center justify-between gap-3 mb-3 sm:mb-0">
+                <div class="min-w-0">
+                    <h1 class="text-xl sm:text-3xl font-black tracking-tight" style="color: #1a1a2e;">
                         <span style="color: var(--pop-coral);">{{ state_cfg.abbreviation }}</span> Scratcher Analyzer
                     </h1>
-                    <p class="text-sm font-semibold mt-1" style="color: #9ca3af;">
-                        {{ total_games }} active games &middot; Updated <span style="color: var(--pop-purple);">{{ analyzed_at[:19].replace('T', ' ') }} UTC</span>
+                    <p class="text-xs sm:text-sm font-semibold mt-0.5" style="color: #9ca3af;">
+                        {{ total_games }} games &middot; <span style="color: var(--pop-purple);">{{ analyzed_at[:19].replace('T', ' ') }} UTC</span>
                     </p>
                 </div>
-                <select class="state-picker" onchange="switchState(this.value)">
+                <select class="state-picker" style="min-height:44px;" onchange="switchState(this.value)">
                     {% for code, cfg in states|dictsort %}
                     <option value="{{ code }}" {% if code == state %}selected{% endif %}>{{ cfg.abbreviation }} — {{ cfg.name }}</option>
                     {% endfor %}
                 </select>
             </div>
-            <div class="flex gap-3 items-center flex-wrap">
-                <a href="/plan?state={{ state }}" class="font-extrabold text-sm px-5 py-2.5 rounded-xl border-2 no-underline"
-                   style="border-color: var(--pop-coral); color: var(--pop-coral); transition: all 0.15s ease;"
-                   onmouseover="this.style.background='var(--pop-coral)';this.style.color='white'"
-                   onmouseout="this.style.background='transparent';this.style.color='var(--pop-coral)'">
+            <!-- Nav row -->
+            <div class="flex gap-2 sm:gap-3 items-center flex-wrap">
+                <a href="/plan?state={{ state }}" class="font-extrabold text-xs sm:text-sm px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl border-2 no-underline"
+                   style="border-color: var(--pop-coral); color: var(--pop-coral);">
                     Game Plan
                 </a>
-                <a href="/tracker?state={{ state }}" class="font-extrabold text-sm px-5 py-2.5 rounded-xl border-2 no-underline"
-                   style="border-color: var(--pop-yellow); color: #92400E; transition: all 0.15s ease;"
-                   onmouseover="this.style.background='var(--pop-yellow)';this.style.color='white'"
-                   onmouseout="this.style.background='transparent';this.style.color='#92400E'">
+                <a href="/tracker?state={{ state }}" class="font-extrabold text-xs sm:text-sm px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl border-2 no-underline"
+                   style="border-color: var(--pop-yellow); color: #92400E;">
                     Tracker
                 </a>
-                <a href="/stores?state={{ state }}" class="font-extrabold text-sm px-5 py-2.5 rounded-xl border-2 no-underline"
-                   style="border-color: var(--pop-purple); color: var(--pop-purple); transition: all 0.15s ease;"
-                   onmouseover="this.style.background='var(--pop-purple)';this.style.color='white'"
-                   onmouseout="this.style.background='transparent';this.style.color='var(--pop-purple)'">
-                    Store Finder
+                <a href="/stores?state={{ state }}" class="font-extrabold text-xs sm:text-sm px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl border-2 no-underline"
+                   style="border-color: var(--pop-purple); color: var(--pop-purple);">
+                    Stores
                 </a>
-                <a href="/go" class="font-extrabold text-sm px-5 py-2.5 rounded-xl border-2 no-underline"
-                   style="border-color: var(--pop-blue); color: var(--pop-blue); transition: all 0.15s ease;"
-                   onmouseover="this.style.background='var(--pop-blue)';this.style.color='white'"
-                   onmouseout="this.style.background='transparent';this.style.color='var(--pop-blue)'">
+                <a href="/go" class="font-extrabold text-xs sm:text-sm px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl border-2 no-underline"
+                   style="border-color: var(--pop-blue); color: var(--pop-blue);">
                     ScratcherIQ
                 </a>
                 <button id="refreshBtn" onclick="refreshData()"
-                    class="refresh-bounce font-extrabold text-white text-base px-7 py-3 rounded-2xl shadow-lg cursor-pointer border-0 active:scale-95"
+                    class="refresh-bounce font-extrabold text-white text-sm sm:text-base px-5 sm:px-7 py-2.5 sm:py-3 rounded-2xl shadow-lg cursor-pointer border-0 active:scale-95 ml-auto"
                     style="background: linear-gradient(135deg, var(--pop-green) 0%, #4ADE80 100%); box-shadow: 0 4px 14px rgba(88,204,2,0.4);">
-                    Refresh Today's Data
+                    Refresh Data
                 </button>
             </div>
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-6 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
 
         <!-- Smart Pick Section with Mascot -->
         <div class="smart-pick-section">
@@ -467,12 +476,12 @@
             </div>
 
             <!-- Pro tips from mascot -->
-            <div class="mt-6 p-5 rounded-2xl bg-white shadow-sm">
+            <div class="mt-4 sm:mt-6 p-4 sm:p-5 rounded-2xl bg-white shadow-sm">
                 <div class="flex items-start gap-3">
-                    <div class="flex-shrink-0 text-3xl">{{ state_cfg.mascot_emoji|safe }}</div>
-                    <div>
-                        <div class="text-sm font-black mb-2" style="color: #1a1a2e;">{{ state_cfg.mascot_name.split(' ')[0] }}'s Pro Tips — How the Pros Play</div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-bold" style="color: #6B7280; line-height: 1.7;">
+                    <div class="flex-shrink-0 text-2xl sm:text-3xl">{{ state_cfg.mascot_emoji|safe }}</div>
+                    <div class="min-w-0">
+                        <div class="text-xs sm:text-sm font-black mb-2" style="color: #1a1a2e;">{{ state_cfg.mascot_name.split(' ')[0] }}'s Pro Tips</div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 text-xs font-bold" style="color: #6B7280; line-height: 1.7;">
                             <div>
                                 <div class="font-black text-sm mb-1" style="color: var(--pop-green);">1. Buy from the same roll</div>
                                 Winners are distributed across each roll. When you buy multiple tickets in a row from the same roll, every loser you pull means the remaining tickets are statistically more likely to contain a winner. <strong style="color:#374151;">Tell the clerk: "Give me [X] in a row from the same roll."</strong>
@@ -496,21 +505,21 @@
         </div>
 
         <!-- Best Picks Section -->
-        <div class="mb-10">
-            <h2 class="text-xl font-black mb-5 flex items-center gap-2" style="color: #1a1a2e;">
+        <div class="mb-6 sm:mb-10">
+            <h2 class="text-lg sm:text-xl font-black mb-4 sm:mb-5 flex items-center gap-2" style="color: #1a1a2e;">
                 Best Pick at Each Price
                 <span class="text-xs font-bold px-3 py-1 rounded-full" style="background: var(--pop-yellow); color: #92400E;">TOP PICKS</span>
             </h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {% set gradients = ['gradient-coral', 'gradient-green', 'gradient-blue', 'gradient-purple', 'gradient-yellow', 'gradient-pink', 'gradient-orange', 'gradient-mint'] %}
                 {% for price, game in best_per_price|dictsort %}
-                <div class="pop-card rounded-3xl p-5 text-white shadow-lg {{ gradients[loop.index0 % 8] }}">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="text-sm font-black bg-white/25 backdrop-blur-sm px-3 py-1 rounded-full">${{ price }} ticket</span>
-                        <span class="text-xs font-bold bg-white/20 px-2 py-0.5 rounded-full">BEST</span>
+                <div class="pop-card rounded-2xl sm:rounded-3xl p-3 sm:p-5 text-white shadow-lg {{ gradients[loop.index0 % 8] }}">
+                    <div class="flex items-center justify-between mb-2 sm:mb-3">
+                        <span class="text-xs sm:text-sm font-black bg-white/25 backdrop-blur-sm px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">${{ price }}</span>
+                        <span class="text-[10px] sm:text-xs font-bold bg-white/20 px-2 py-0.5 rounded-full">BEST</span>
                     </div>
-                    <div class="text-lg font-black mb-4 leading-tight">{{ game.name }}</div>
-                    <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div class="text-sm sm:text-lg font-black mb-2 sm:mb-4 leading-tight">{{ game.name }}</div>
+                    <div class="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
                         <div>
                             <div class="text-white/70 text-xs font-bold">Top Prize</div>
                             <div class="font-extrabold">${{ "{:,.0f}".format(game.top_prize) }}</div>
@@ -534,81 +543,80 @@
         </div>
 
         <!-- Filters -->
-        <form method="GET" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-8 flex flex-wrap items-center gap-4">
+        <form method="GET" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5 mb-6 sm:mb-8">
             <input type="hidden" name="state" value="{{ state }}">
-            <span class="text-sm font-extrabold" style="color: #1a1a2e;">Filter:</span>
+            <div class="flex flex-wrap items-center gap-2 sm:gap-4">
+                <span class="text-xs sm:text-sm font-extrabold" style="color: #1a1a2e;">Price:</span>
+                <select name="min_price" class="select select-bordered select-sm rounded-xl font-bold text-sm" style="min-height:40px;">
+                    <option value="0" {% if min_price == 0 %}selected{% endif %}>Any Min</option>
+                    <option value="1" {% if min_price == 1 %}selected{% endif %}>$1+</option>
+                    <option value="5" {% if min_price == 5 %}selected{% endif %}>$5+</option>
+                    <option value="10" {% if min_price == 10 %}selected{% endif %}>$10+</option>
+                    <option value="20" {% if min_price == 20 %}selected{% endif %}>$20+</option>
+                    <option value="30" {% if min_price == 30 %}selected{% endif %}>$30+</option>
+                </select>
+                <span class="text-gray-400 font-bold text-sm">to</span>
+                <select name="max_price" class="select select-bordered select-sm rounded-xl font-bold text-sm" style="min-height:40px;">
+                    <option value="1" {% if max_price == 1 %}selected{% endif %}>$1</option>
+                    <option value="2" {% if max_price == 2 %}selected{% endif %}>$2</option>
+                    <option value="3" {% if max_price == 3 %}selected{% endif %}>$3</option>
+                    <option value="5" {% if max_price == 5 %}selected{% endif %}>$5</option>
+                    <option value="10" {% if max_price == 10 %}selected{% endif %}>$10</option>
+                    <option value="20" {% if max_price == 20 %}selected{% endif %}>$20</option>
+                    <option value="30" {% if max_price == 30 %}selected{% endif %}>$30</option>
+                    <option value="50" {% if max_price == 50 %}selected{% endif %}>$50</option>
+                    <option value="999" {% if max_price == 999 %}selected{% endif %}>Any Max</option>
+                </select>
 
-            <select name="min_price" class="select select-bordered select-sm rounded-xl font-bold">
-                <option value="0" {% if min_price == 0 %}selected{% endif %}>Any Min</option>
-                <option value="1" {% if min_price == 1 %}selected{% endif %}>$1+</option>
-                <option value="5" {% if min_price == 5 %}selected{% endif %}>$5+</option>
-                <option value="10" {% if min_price == 10 %}selected{% endif %}>$10+</option>
-                <option value="20" {% if min_price == 20 %}selected{% endif %}>$20+</option>
-                <option value="30" {% if min_price == 30 %}selected{% endif %}>$30+</option>
-            </select>
-            <span class="text-gray-400 font-bold text-sm">to</span>
-            <select name="max_price" class="select select-bordered select-sm rounded-xl font-bold">
-                <option value="1" {% if max_price == 1 %}selected{% endif %}>$1</option>
-                <option value="2" {% if max_price == 2 %}selected{% endif %}>$2</option>
-                <option value="3" {% if max_price == 3 %}selected{% endif %}>$3</option>
-                <option value="5" {% if max_price == 5 %}selected{% endif %}>$5</option>
-                <option value="10" {% if max_price == 10 %}selected{% endif %}>$10</option>
-                <option value="20" {% if max_price == 20 %}selected{% endif %}>$20</option>
-                <option value="30" {% if max_price == 30 %}selected{% endif %}>$30</option>
-                <option value="50" {% if max_price == 50 %}selected{% endif %}>$50</option>
-                <option value="999" {% if max_price == 999 %}selected{% endif %}>Any Max</option>
-            </select>
+                <span class="text-xs sm:text-sm font-extrabold" style="color: #1a1a2e;">Sort:</span>
+                <select name="sort" class="select select-bordered select-sm rounded-xl font-bold text-sm" style="min-height:40px;">
+                    <option value="score" {% if sort_by == 'score' %}selected{% endif %}>Best Overall</option>
+                    <option value="odds" {% if sort_by == 'odds' %}selected{% endif %}>Win Rate</option>
+                    <option value="top_prize" {% if sort_by == 'top_prize' %}selected{% endif %}>Top Prize</option>
+                    <option value="remaining" {% if sort_by == 'remaining' %}selected{% endif %}>Prizes Left</option>
+                    <option value="ratio" {% if sort_by == 'ratio' %}selected{% endif %}>Prize/Price Ratio</option>
+                    <option value="price" {% if sort_by == 'price' %}selected{% endif %}>Price</option>
+                </select>
 
-            <div class="w-px h-6 bg-gray-200 mx-1"></div>
-
-            <span class="text-sm font-extrabold" style="color: #1a1a2e;">Sort:</span>
-            <select name="sort" class="select select-bordered select-sm rounded-xl font-bold">
-                <option value="score" {% if sort_by == 'score' %}selected{% endif %}>Best Overall</option>
-                <option value="odds" {% if sort_by == 'odds' %}selected{% endif %}>Win Rate</option>
-                <option value="top_prize" {% if sort_by == 'top_prize' %}selected{% endif %}>Top Prize</option>
-                <option value="remaining" {% if sort_by == 'remaining' %}selected{% endif %}>Prizes Left</option>
-                <option value="ratio" {% if sort_by == 'ratio' %}selected{% endif %}>Prize/Price Ratio</option>
-                <option value="price" {% if sort_by == 'price' %}selected{% endif %}>Price</option>
-            </select>
-
-            <button type="submit" class="btn btn-sm rounded-xl font-extrabold text-white border-0"
-                style="background: var(--pop-purple);">
-                Apply
-            </button>
+                <button type="submit" class="btn btn-sm rounded-xl font-extrabold text-white border-0" style="background: var(--pop-purple); min-height:40px;">
+                    Apply
+                </button>
+            </div>
         </form>
 
         <!-- Games Table -->
         <div class="mb-4 flex items-center gap-3">
-            <h2 class="text-xl font-black" style="color: #1a1a2e;">All Games</h2>
+            <h2 class="text-lg sm:text-xl font-black" style="color: #1a1a2e;">All Games</h2>
             <span class="text-xs font-bold px-3 py-1 rounded-full" style="background: #EDE9FE; color: #5B21B6;">{{ games|length }} games</span>
         </div>
 
-        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <p class="text-[10px] font-bold text-gray-400 px-4 py-2 sm:hidden">Swipe to see all columns &rarr;</p>
             <div class="overflow-x-auto">
-                <table class="w-full text-sm">
+                <table class="w-full text-xs sm:text-sm">
                     <thead>
                         <tr class="border-b-2 border-gray-100">
-                            <th class="px-5 py-4 text-left text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
+                            <th class="px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
                                 <a href="?sort=score&min_price={{ min_price }}&max_price={{ max_price }}&state={{ state }}" class="hover:text-[--pop-purple] no-underline" style="color: inherit;">#</a>
                             </th>
-                            <th class="px-5 py-4 text-left text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">Game</th>
-                            <th class="px-5 py-4 text-left text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
+                            <th class="px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">Game</th>
+                            <th class="px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
                                 <a href="?sort=price&min_price={{ min_price }}&max_price={{ max_price }}&state={{ state }}" class="hover:text-[--pop-purple] no-underline" style="color: inherit;">Price</a>
                             </th>
-                            <th class="px-5 py-4 text-left text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
+                            <th class="px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
                                 <a href="?sort=top_prize&min_price={{ min_price }}&max_price={{ max_price }}&state={{ state }}" class="hover:text-[--pop-purple] no-underline" style="color: inherit;">Top Prize</a>
                             </th>
-                            <th class="px-5 py-4 text-left text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
-                                <a href="?sort=remaining&min_price={{ min_price }}&max_price={{ max_price }}&state={{ state }}" class="hover:text-[--pop-purple] no-underline" style="color: inherit;">Prizes Left</a>
+                            <th class="px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
+                                <a href="?sort=remaining&min_price={{ min_price }}&max_price={{ max_price }}&state={{ state }}" class="hover:text-[--pop-purple] no-underline" style="color: inherit;">Left</a>
                             </th>
-                            <th class="px-5 py-4 text-left text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
-                                <a href="?sort=odds&min_price={{ min_price }}&max_price={{ max_price }}&state={{ state }}" class="hover:text-[--pop-purple] no-underline" style="color: inherit;">Win Rate</a>
+                            <th class="px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
+                                <a href="?sort=odds&min_price={{ min_price }}&max_price={{ max_price }}&state={{ state }}" class="hover:text-[--pop-purple] no-underline" style="color: inherit;">Win%</a>
                             </th>
-                            <th class="px-5 py-4 text-left text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">Odds</th>
-                            <th class="px-5 py-4 text-left text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
+                            <th class="px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">Odds</th>
+                            <th class="px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
                                 <a href="?sort=ratio&min_price={{ min_price }}&max_price={{ max_price }}&state={{ state }}" class="hover:text-[--pop-purple] no-underline" style="color: inherit;">Ratio</a>
                             </th>
-                            <th class="px-5 py-4 text-left text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
+                            <th class="px-3 sm:px-5 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-black uppercase tracking-wider" style="color: #9ca3af;">
                                 <a href="?sort=score&min_price={{ min_price }}&max_price={{ max_price }}&state={{ state }}" class="hover:text-[--pop-purple] no-underline" style="color: inherit;">Score</a>
                             </th>
                         </tr>
@@ -617,7 +625,7 @@
                         {% for game in games %}
                         <tr class="game-row border-b border-gray-50 {% if loop.index is odd %}bg-white{% else %}bg-orange-50/30{% endif %}">
                             <!-- Rank -->
-                            <td class="px-5 py-3.5">
+                            <td class="px-3 sm:px-5 py-2.5 sm:py-3.5">
                                 {% if loop.index == 1 %}
                                     <span class="inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-black text-white" style="background: var(--pop-yellow); color: #92400E;">1</span>
                                 {% elif loop.index == 2 %}
@@ -629,41 +637,41 @@
                                 {% endif %}
                             </td>
                             <!-- Game Name -->
-                            <td class="px-5 py-3.5">
+                            <td class="px-3 sm:px-5 py-2.5 sm:py-3.5">
                                 <div class="font-extrabold" style="color: #1a1a2e;">{{ game.name }}</div>
                                 <div class="text-xs font-bold text-gray-400">#{{ game.game_num }}</div>
                             </td>
                             <!-- Price -->
-                            <td class="px-5 py-3.5">
+                            <td class="px-3 sm:px-5 py-2.5 sm:py-3.5">
                                 {% set p = game.price|int %}
                                 <span class="inline-block px-3 py-1 rounded-full text-xs font-black price-{{ p }}">
                                     ${{ "{:,.0f}".format(game.price) }}
                                 </span>
                             </td>
                             <!-- Top Prize -->
-                            <td class="px-5 py-3.5 font-extrabold" style="color: var(--pop-coral);">
+                            <td class="px-3 sm:px-5 py-2.5 sm:py-3.5 font-extrabold" style="color: var(--pop-coral);">
                                 ${{ "{:,.0f}".format(game.top_prize) }}
                             </td>
                             <!-- Prizes Remaining -->
-                            <td class="px-5 py-3.5">
+                            <td class="px-3 sm:px-5 py-2.5 sm:py-3.5">
                                 <span class="inline-block px-3 py-1 rounded-full text-xs font-black {% if game.top_prizes_remaining >= 5 %}remaining-high{% elif game.top_prizes_remaining >= 2 %}remaining-mid{% else %}remaining-low{% endif %}">
                                     {{ game.top_prizes_remaining }}
                                 </span>
                             </td>
                             <!-- Win Rate -->
-                            <td class="px-5 py-3.5 font-extrabold" style="color: var(--pop-green);">
+                            <td class="px-3 sm:px-5 py-2.5 sm:py-3.5 font-extrabold" style="color: var(--pop-green);">
                                 {{ game.win_rate_pct }}%
                             </td>
                             <!-- Odds -->
-                            <td class="px-5 py-3.5 text-gray-500 font-bold">
+                            <td class="px-3 sm:px-5 py-2.5 sm:py-3.5 text-gray-500 font-bold">
                                 1 in {{ game.odds_1_in }}
                             </td>
                             <!-- Ratio -->
-                            <td class="px-5 py-3.5 font-bold" style="color: var(--pop-purple);">
+                            <td class="px-3 sm:px-5 py-2.5 sm:py-3.5 font-bold" style="color: var(--pop-purple);">
                                 {{ "{:,.0f}".format(game.top_prize_to_price_ratio) }}x
                             </td>
                             <!-- Score -->
-                            <td class="px-5 py-3.5">
+                            <td class="px-3 sm:px-5 py-2.5 sm:py-3.5">
                                 {% set max_score = games[0].score if games else 1 %}
                                 {% set pct = (game.score / max_score * 100) if max_score > 0 else 0 %}
                                 <span class="inline-block px-3 py-1 rounded-full text-xs font-black {% if pct >= 75 %}score-great{% elif pct >= 50 %}score-good{% elif pct >= 25 %}score-ok{% else %}score-low{% endif %}">
@@ -678,7 +686,7 @@
         </div>
 
         <!-- How It Works -->
-        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 mt-8">
+        <div class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 p-4 sm:p-6 mt-6 sm:mt-8">
             <h3 class="text-lg font-black mb-4" style="color: #1a1a2e;">How the Score Works</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div class="flex gap-3">

@@ -2,6 +2,7 @@
 <html data-theme="cupcake">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ state_cfg.abbreviation }} Scratcher Analyzer</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
@@ -13,17 +14,17 @@
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center">
-    <div class="text-center">
-        <h1 class="text-4xl font-black mb-3" style="color: #1a1a2e;">
+    <div class="text-center px-6">
+        <h1 class="text-2xl sm:text-4xl font-black mb-3" style="color: #1a1a2e;">
             <span style="color: #FF6B6B;">{{ state_cfg.abbreviation }}</span> Scratcher Analyzer
         </h1>
         <p class="text-gray-500 font-bold mb-8">No {{ state_cfg.name }} data yet — let's fix that.</p>
         <button id="btn" onclick="refresh()"
-            class="font-extrabold text-white text-lg px-8 py-4 rounded-2xl shadow-lg cursor-pointer border-0 active:scale-95"
+            class="w-full sm:w-auto font-extrabold text-white text-lg px-8 py-4 rounded-2xl shadow-lg cursor-pointer border-0 active:scale-95"
             style="background: linear-gradient(135deg, #58CC02 0%, #4ADE80 100%); box-shadow: 0 4px 14px rgba(88,204,2,0.4);">
             Fetch {{ state_cfg.abbreviation }} Data Now
         </button>
-        <p id="status" class="mt-4 text-sm font-bold text-gray-400"></p>
+        <p id="status" class="mt-4 text-sm font-bold text-gray-400 break-words"></p>
     </div>
     <script>
         function refresh() {

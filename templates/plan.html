@@ -19,11 +19,11 @@
 <body class="min-h-screen p-4" style="max-width: 480px; margin: 0 auto;">
 
     <!-- Nav -->
-    <div class="no-print flex gap-2 mb-4">
-        <a href="/?state={{ state }}" class="text-xs font-extrabold px-3 py-1.5 rounded-lg no-underline" style="background: #EDE9FE; color: #5B21B6;">Dashboard</a>
-        <a href="/stores?state={{ state }}" class="text-xs font-extrabold px-3 py-1.5 rounded-lg no-underline" style="background: #D1FAE5; color: #065F46;">Stores</a>
-        <a href="/tracker?state={{ state }}" class="text-xs font-extrabold px-3 py-1.5 rounded-lg no-underline" style="background: #FEF3C7; color: #92400E;">Tracker</a>
-        <a href="/go" class="text-xs font-extrabold px-3 py-1.5 rounded-lg no-underline" style="background: #DBEAFE; color: #1E40AF;">ScratcherIQ</a>
+    <div class="no-print flex flex-wrap gap-2 mb-4">
+        <a href="/?state={{ state }}" class="text-xs font-extrabold px-4 py-2.5 rounded-lg no-underline" style="background: #EDE9FE; color: #5B21B6; min-height:44px; display:inline-flex; align-items:center;">Dashboard</a>
+        <a href="/stores?state={{ state }}" class="text-xs font-extrabold px-4 py-2.5 rounded-lg no-underline" style="background: #D1FAE5; color: #065F46; min-height:44px; display:inline-flex; align-items:center;">Stores</a>
+        <a href="/tracker?state={{ state }}" class="text-xs font-extrabold px-4 py-2.5 rounded-lg no-underline" style="background: #FEF3C7; color: #92400E; min-height:44px; display:inline-flex; align-items:center;">Tracker</a>
+        <a href="/go" class="text-xs font-extrabold px-4 py-2.5 rounded-lg no-underline" style="background: #DBEAFE; color: #1E40AF; min-height:44px; display:inline-flex; align-items:center;">ScratcherIQ</a>
     </div>
 
     <!-- Header -->
@@ -56,22 +56,22 @@
         </div>
 
         <!-- Quick stats -->
-        <div class="grid grid-cols-4 gap-2 text-center">
+        <div class="grid grid-cols-4 gap-1 text-center">
             <div>
                 <div class="text-[10px] font-bold text-gray-400">Buy</div>
-                <div class="text-lg font-black" style="color: #1a1a2e;">{{ pick.buy_recommended }}</div>
+                <div class="text-base font-black" style="color: #1a1a2e;">{{ pick.buy_recommended }}</div>
             </div>
             <div>
                 <div class="text-[10px] font-bold text-gray-400">Cost</div>
-                <div class="text-lg font-black" style="color: var(--pop-purple);">${{ pick.buy_cost|int }}</div>
+                <div class="text-base font-black" style="color: var(--pop-purple);">${{ pick.buy_cost|int }}</div>
             </div>
             <div>
                 <div class="text-[10px] font-bold text-gray-400">Win%</div>
-                <div class="text-lg font-black" style="color: var(--pop-green);">{{ pick.buy_win_chance|int }}%</div>
+                <div class="text-base font-black" style="color: var(--pop-green);">{{ pick.buy_win_chance|int }}%</div>
             </div>
             <div>
                 <div class="text-[10px] font-bold text-gray-400">Top $</div>
-                <div class="text-lg font-black" style="color: var(--pop-coral);">{{ "{:,.0f}".format(pick.top_prize / 1000) }}K</div>
+                <div class="text-base font-black" style="color: var(--pop-coral);">{{ "{:,.0f}".format(pick.top_prize / 1000) }}K</div>
             </div>
         </div>
 

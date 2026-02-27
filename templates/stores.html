@@ -23,7 +23,8 @@
             --pop-mint: #6EE7B7;
         }
         body { font-family: 'Nunito', system-ui, sans-serif; background: var(--pop-cream); }
-        #map { height: 550px; width: 100%; border-radius: 24px; border: 3px solid white; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        #map { height: 350px; width: 100%; border-radius: 16px; border: 3px solid white; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        @media (min-width: 640px) { #map { height: 550px; border-radius: 24px; } }
 
         .store-card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
         .store-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
@@ -35,7 +36,8 @@
             box-shadow: 0 8px 30px rgba(0,0,0,0.15) !important;
             padding: 0 !important;
         }
-        .leaflet-popup-content { margin: 0 !important; width: 260px !important; }
+        .leaflet-popup-content { margin: 0 !important; width: 240px !important; }
+        @media (min-width: 640px) { .leaflet-popup-content { width: 260px !important; } }
         .leaflet-popup-tip { box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important; }
 
         .popup-inner { padding: 16px 18px 14px; }
@@ -137,69 +139,65 @@
 
     <!-- Header -->
     <div class="bg-white border-b-4 border-[--pop-purple] shadow-sm">
-        <div class="max-w-7xl mx-auto px-6 py-5 flex flex-wrap items-center justify-between gap-4">
-            <div>
-                <h1 class="text-3xl font-black tracking-tight" style="color: #1a1a2e;">
-                    <span style="color: var(--pop-purple);">Store</span> Finder
-                </h1>
-                <p class="text-sm font-semibold mt-1" style="color: #9ca3af;">
-                    Find {{ state_cfg.name }} Lottery retailers near you
-                </p>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-5">
+            <div class="flex items-center justify-between gap-3 mb-3 sm:mb-0">
+                <div>
+                    <h1 class="text-xl sm:text-3xl font-black tracking-tight" style="color: #1a1a2e;">
+                        <span style="color: var(--pop-purple);">Store</span> Finder
+                    </h1>
+                    <p class="text-xs sm:text-sm font-semibold mt-0.5" style="color: #9ca3af;">
+                        Find {{ state_cfg.name }} Lottery retailers
+                    </p>
+                </div>
             </div>
-            <div class="flex gap-3 items-center flex-wrap">
-                <a href="/?state={{ state }}" class="font-extrabold text-sm px-5 py-2.5 rounded-xl border-2 no-underline"
-                   style="border-color: var(--pop-green); color: var(--pop-green); transition: all 0.15s ease;"
-                   onmouseover="this.style.background='var(--pop-green)';this.style.color='white'"
-                   onmouseout="this.style.background='transparent';this.style.color='var(--pop-green)'">
+            <div class="flex gap-2 sm:gap-3 items-center flex-wrap">
+                <a href="/?state={{ state }}" class="font-extrabold text-xs sm:text-sm px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl border-2 no-underline"
+                   style="border-color: var(--pop-green); color: var(--pop-green);">
                     Dashboard
                 </a>
-                <a href="/plan?state={{ state }}" class="font-extrabold text-sm px-5 py-2.5 rounded-xl border-2 no-underline"
-                   style="border-color: var(--pop-coral); color: var(--pop-coral); transition: all 0.15s ease;"
-                   onmouseover="this.style.background='var(--pop-coral)';this.style.color='white'"
-                   onmouseout="this.style.background='transparent';this.style.color='var(--pop-coral)'">
+                <a href="/plan?state={{ state }}" class="font-extrabold text-xs sm:text-sm px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl border-2 no-underline"
+                   style="border-color: var(--pop-coral); color: var(--pop-coral);">
                     Game Plan
                 </a>
-                <a href="/tracker?state={{ state }}" class="font-extrabold text-sm px-5 py-2.5 rounded-xl border-2 no-underline"
-                   style="border-color: var(--pop-yellow); color: #92400E; transition: all 0.15s ease;"
-                   onmouseover="this.style.background='var(--pop-yellow)';this.style.color='white'"
-                   onmouseout="this.style.background='transparent';this.style.color='#92400E'">
+                <a href="/tracker?state={{ state }}" class="font-extrabold text-xs sm:text-sm px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl border-2 no-underline"
+                   style="border-color: var(--pop-yellow); color: #92400E;">
                     Tracker
                 </a>
-                <a href="/go" class="font-extrabold text-sm px-5 py-2.5 rounded-xl border-2 no-underline"
-                   style="border-color: var(--pop-blue); color: var(--pop-blue); transition: all 0.15s ease;"
-                   onmouseover="this.style.background='var(--pop-blue)';this.style.color='white'"
-                   onmouseout="this.style.background='transparent';this.style.color='var(--pop-blue)'">
+                <a href="/go" class="font-extrabold text-xs sm:text-sm px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl border-2 no-underline"
+                   style="border-color: var(--pop-blue); color: var(--pop-blue);">
                     ScratcherIQ
                 </a>
             </div>
         </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-6 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
 
         {% if state_cfg.has_retailer_api %}
         <!-- Search Bar -->
-        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 mb-6">
-            <div class="flex flex-wrap gap-4 items-end">
-                <div class="flex-1 min-w-[250px]">
+        <div class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-4 sm:mb-6">
+            <div class="space-y-3 sm:space-y-0 sm:flex sm:flex-wrap sm:gap-4 sm:items-end">
+                <div class="sm:flex-1 sm:min-w-[250px]">
                     <label class="text-xs font-black uppercase tracking-wider mb-2 block" style="color: #9ca3af;">
                         Search by ZIP code or city
                     </label>
                     <input type="text" id="searchInput" placeholder="e.g. 85281 or Tempe"
                         class="input input-bordered w-full rounded-xl font-bold text-base"
-                        style="border-color: #e5e7eb;"
+                        style="border-color: #e5e7eb; min-height: 48px;"
                         onkeydown="if(event.key==='Enter') searchLocation()">
                 </div>
-                <button onclick="searchLocation()" id="searchBtn"
-                    class="font-extrabold text-white px-7 py-3 rounded-xl cursor-pointer border-0 active:scale-95"
-                    style="background: var(--pop-purple); height: 48px;">
-                    Search
-                </button>
-                <button onclick="useMyLocation()" id="locateBtn"
-                    class="font-extrabold text-white px-7 py-3 rounded-xl cursor-pointer border-0 active:scale-95"
-                    style="background: var(--pop-green); box-shadow: 0 3px 10px rgba(88,204,2,0.3); height: 48px;">
-                    Use My Location
-                </button>
+                <div class="flex gap-3">
+                    <button onclick="searchLocation()" id="searchBtn"
+                        class="flex-1 sm:flex-none font-extrabold text-white px-5 sm:px-7 py-3 rounded-xl cursor-pointer border-0 active:scale-95"
+                        style="background: var(--pop-purple); min-height: 48px;">
+                        Search
+                    </button>
+                    <button onclick="useMyLocation()" id="locateBtn"
+                        class="flex-1 sm:flex-none font-extrabold text-white px-5 sm:px-7 py-3 rounded-xl cursor-pointer border-0 active:scale-95"
+                        style="background: var(--pop-green); box-shadow: 0 3px 10px rgba(88,204,2,0.3); min-height: 48px;">
+                        Use My Location
+                    </button>
+                </div>
             </div>
             <p id="searchStatus" class="text-xs font-bold mt-3" style="color: #9ca3af;"></p>
         </div>
