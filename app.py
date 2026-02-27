@@ -4,6 +4,7 @@ Run: python app.py
 Visit: http://localhost:5000
 """
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -227,13 +228,15 @@ def api_refresh():
     try:
         _ensure_data_dir()
         summary = scrape_summary(state)
-        # Try to get tier data for EV calculations
+        # Skip tier scraping on Vercel (too slow for serverless 10s timeout)
+        # Tier data is populated by daily_refresh.sh or local runs
         tier_data = None
-        try:
-            game_nums = [g["game_num"] for g in summary]
-            tier_data = scrape_prize_tiers(state, game_nums)
-        except Exception:
-            pass
+        if not os.environ.get("VERCEL"):
+            try:
+                game_nums = [g["game_num"] for g in summary]
+                tier_data = scrape_prize_tiers(state, game_nums)
+            except Exception:
+                pass
         analyzed = analyze_games(summary, tier_data=tier_data)
         compute_velocity(state, analyzed)
         save_snapshot(state, analyzed)

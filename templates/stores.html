@@ -340,6 +340,13 @@
             `;
         }
 
+        function placeUserPin(lat, lng) {
+            if (userMarker) map.removeLayer(userMarker);
+            userMarker = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map)
+                .bindPopup('<div style="padding:8px 4px;text-align:center;"><div style="font-weight:900;font-size:14px;color:#1a1a2e;">You are here</div></div>');
+            map.setView([lat, lng], 13);
+        }
+
         function fetchRetailers(lat, lng) {
             showMapLoading('Finding nearby stores...');
             setStatus('Finding nearby stores...', 'var(--pop-purple)');
@@ -348,10 +355,8 @@
             userLat = lat;
             userLng = lng;
 
-            // Place user marker with pulsing dot
-            if (userMarker) map.removeLayer(userMarker);
-            userMarker = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map)
-                .bindPopup('<div style="padding:8px 4px;text-align:center;"><div style="font-weight:900;font-size:14px;color:#1a1a2e;">You are here</div></div>');
+            // Place user marker with pulsing dot immediately
+            placeUserPin(lat, lng);
 
             fetch(`/api/retailers?lat=${lat}&lng=${lng}&state={{ state }}`)
                 .then(r => r.json())
@@ -518,6 +523,46 @@
                         // Fall back silently — user can search manually
                         hideMapLoading();
                         setStatus('Allow location access or search by ZIP code to find stores near you.', '#9ca3af');
+                    },
+                    { enableHighAccuracy: true, timeout: 8000 }
+                );
+            } else {
+                hideMapLoading();
+            }
+        });
+        {% else %}
+        // No retailer API — still show user location on map
+        const userIcon = L.divIcon({
+            html: `<div class="user-dot-wrapper">
+                       <div class="user-dot-pulse"></div>
+                       <div class="user-dot"></div>
+                   </div>`,
+            iconSize: [18, 18],
+            iconAnchor: [9, 9],
+            className: '',
+        });
+        let userMarker = null;
+
+        function hideMapLoading() {
+            const el = document.getElementById('mapLoading');
+            if (el) el.style.display = 'none';
+        }
+
+        window.addEventListener('load', () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    pos => {
+                        hideMapLoading();
+                        const lat = pos.coords.latitude;
+                        const lng = pos.coords.longitude;
+                        if (userMarker) map.removeLayer(userMarker);
+                        userMarker = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map)
+                            .bindPopup('<div style="padding:8px 4px;text-align:center;"><div style="font-weight:900;font-size:14px;color:#1a1a2e;">You are here</div></div>')
+                            .openPopup();
+                        map.setView([lat, lng], 13);
+                    },
+                    err => {
+                        hideMapLoading();
                     },
                     { enableHighAccuracy: true, timeout: 8000 }
                 );
