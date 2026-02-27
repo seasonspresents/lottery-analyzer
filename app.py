@@ -42,6 +42,11 @@ def get_analyzed_data(state_code):
     return None
 
 
+def _ensure_data_dir():
+    """Ensure DATA_DIR exists (needed on Vercel where /tmp can be wiped)."""
+    DATA_DIR.mkdir(exist_ok=True)
+
+
 def render_with_state(template, state_code, **kwargs):
     """Render a template with state config injected + set the state cookie."""
     resp = make_response(render_template(
@@ -209,6 +214,7 @@ def api_refresh():
     if state not in STATE_CONFIG:
         state = DEFAULT_STATE
     try:
+        _ensure_data_dir()
         summary = scrape_summary(state)
         analyzed = analyze_games(summary)
         result = {

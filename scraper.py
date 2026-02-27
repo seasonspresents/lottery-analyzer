@@ -13,7 +13,11 @@ from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
 
-DATA_DIR = Path(__file__).parent / "data"
+# On Vercel (read-only filesystem), use /tmp for data storage
+if os.environ.get("VERCEL"):
+    DATA_DIR = Path("/tmp/data")
+else:
+    DATA_DIR = Path(__file__).parent / "data"
 DATA_DIR.mkdir(exist_ok=True)
 
 HEADERS = {
